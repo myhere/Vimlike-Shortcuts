@@ -1,5 +1,9 @@
 /**
  * @fileoverview
+ *
+ * NOTE:
+ *   - 在 keypress 中绑定可见按键的事件
+ *   - 在 keyup 中绑定不可见按键的事件
  * 
  * Helpers:
  *   logger
@@ -196,8 +200,19 @@ KeyStroke.prototype = new Proto(KeyStroke, {
             return false;
         }
 
-        logger('[KeyStroke::isValidKeyStroke]',  'event.target.tagName=' + tagName);
         return true;
+    },
+
+    isKeydown: function() {
+        return this.getEventType() === 'keydown';
+    },
+
+    isKeypress: function () {
+        return this.getEventType() === 'keypress';
+    },
+
+    isKeyup: function() {
+        return this.getEventType() === 'keyup';
     },
 
     getKeyCode: function() {
@@ -230,8 +245,12 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      * Object example:
      * {
      *   type: 'keydown keypress',
-     *   keyStrokes: 'zhanglin',
+     *   pattern: {
+     *     isRegExp: false,
+     *     value: 'zhanglin'
+     *   },
      *   fns: {
+     *     filter: function() {},
      *     execute: function() {},
      *     clean: function() {}
      *   }
@@ -244,7 +263,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
         var type, _action;
         while (type = types.pop()) {
             _action = {
-                keyStrokes: action.keyStrokes,
+                pattern: action.pattern,
                 fns: action.fns
             }
 
@@ -263,61 +282,84 @@ function Router(actionContainer) {
     this.actionContainer = actionContainer;
 
     this.keyStrokes = '';
-    this.actions;
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
-        if (!keyStroke.isValidKeyStroke()) {
-            this.clearKeyStrokes();
-            return;
-        }
-
         var type = keyStroke.getEventType();
-
-        this.actions = this.actionContainer.getActions(type);
-        this.keyStrokes += keyStroke.getKeyStroke();
-
-        this.filterActions();
-        this.execute(keyStroke);
+        // 只在 keypress 中获取字符
+        if (keyStroke.isKeypress()) {
+            this.keyStrokes += keyStroke.getKeyStroke();
+        }
+        var actions = this.actionContainer.getActions(type);
+        actions = this.filterActions(actions, keyStroke);
+        this.execute(actions, keyStroke);
     },
 
-    filterActions: function () { // utils.filter
+    filterActions: function (actions, keyStroke) { // utils.filter
         var results = [],
-            actions = this.actions,
             keyStrokes = this.keyStrokes;
 
-        var reg,
-            i = 0,
+        var i = 0,
             len = actions.length;
         for (; i < len; ++i) {
-            reg = new RegExp(actions[i].keyStrokes);
-            if (reg.test(keyStrokes)) {
-                results.push(actions[i]);
+            filter(actions[i]);
+        }
+
+        return results;
+
+        function filter(action) {
+            var value,
+                pattern = action.pattern;
+
+            if (pattern) {
+                value = pattern.value;
+                if (pattern.isRegExp) {
+                    value = new RegExp(value);
+                    if (value.test(keyStrokes)) {
+                        customFilter(action);
+                    }
+                } else { 
+                    if (value.indexOf(keyStrokes) === 0) {
+                        customFilter(action);
+                    }
+                }
+            } else {
+                customFilter(action);
             }
         }
 
-        this.actions = results;
+        function customFilter(action) {
+            var fn = action.fns && action.fns.filter;
+            if (typeof fn === 'function') {
+                if (fn.call(keyStroke)) {
+                    results.push(action);
+                }
+            } else {
+                results.push(action);
+            }
+        }
     },
 
-    execute: function (keyStroke) {
-        var actions = this.actions;
+    execute: function (actions, keyStroke) {
         if (actions.length === 1) {
             var fns = actions[0].fns,
-                execute = fns.execute,
-                clean = fns.clean;
+                execute = fns.execute;
 
             var that = {
                 currentKeyStroke: keyStroke.getKeyStroke(),
-                keyStrokes: this.keyStrokes
+                keyStrokes: this.keyStrokes,
+                keyStroke: keyStroke
             };
 
             var ret = execute.apply(that);
 
-            clean && clean.apply(that);
-
             if (ret) {
+                fns.clean && fns.clean.apply(that);
+
                 this.clearKeyStrokes();
             }
+        } else if (actions.length === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress‘ 是为了防止 keyup 中 清空 this.keyStrokes 属性
+            this.clearKeyStrokes();
         }
     },
 
@@ -350,13 +392,20 @@ Controller.prototype = new Proto(Controller, {
     },
 
     bindEvent: function (type) {
-        this.bindedEvents[type] = true;
-        Event.addListener(document, type, this.handlers[type]);
+        if (!this.bindedEvents[type]) {
+            this.bindedEvents[type] = true;
+            Event.addListener(document, type, this.handlers[type]);
+            
+            logger('[Controller::bindEvent], bind Event: "' + type + '"');
+        }
     },
 
     unbindEvent: function (type) {
-        this.bindedEvents[type] = false;
-        Event.addListener(document, type, this.handlers[type]);
+        if (this.bindedEvents[type]) {
+            this.bindedEvents[type] = false;
+            Event.removeListener(document, type, this.handlers[type]);
+            logger('[Controller::unbindEvent], unbind Event: "' + type + '"');
+        }
     }
 });
 
@@ -375,7 +424,7 @@ function extractToWindow(controller, actionContainer) {
                 if (isValidEventType(type)) {
                     controller.bindEvent(type);
                 } else {
-                    logger('[shortcuts::bindEvents], invalid type: ' + type);
+                    throw new Error('[shortcuts::bindEvents], invalid types: ' + types);
                 }
             }
         },
@@ -405,7 +454,7 @@ function extractToWindow(controller, actionContainer) {
                 if (valid) {
                     actionContainer.addAction(action);
                 } else {
-                    logger('[shortcuts::addActions], invalid type: ' + action.types);
+                    throw new Error('[shortcuts::addActions], invalid type: ' + action.type);
                 }
             }
         }
@@ -432,6 +481,4 @@ function main() {
 main();
 
 })();
-
-
 
