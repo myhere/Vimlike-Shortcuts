@@ -171,7 +171,7 @@ var utils = (function() {
         nativeMap     = arrayProto.map,
         nativeFilter  = arrayProto.filter,
         nativeEvery   = arrayProto.every,
-        nativeTrim    = arrayProto.trim;
+        nativeTrim    = String.prototype.trim;
 
     var _ = {};
 
@@ -382,7 +382,6 @@ var V = (function() {
 var CONSTANTS = {
     SCROLL_STEP: 200
 };
-
 
 var filterByTarget = function() {
     return this.isValidKeyStroke();
