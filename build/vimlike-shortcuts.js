@@ -1,5 +1,9 @@
 /**
  * @fileoverview
+ *
+ * NOTE:
+ *   - 在 keypress 中绑定可见按键的事件
+ *   - 在 keyup 中绑定不可见按键的事件
  * 
  * Helpers:
  *   logger
@@ -241,9 +245,9 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      * Object example:
      * {
      *   type: 'keydown keypress',
-     *   keyStrokes: {
+     *   pattern: {
      *     isRegExp: false,
-     *     pattern: 'zhanglin'
+     *     value: 'zhanglin'
      *   },
      *   fns: {
      *     filter: function() {},
@@ -278,10 +282,13 @@ function Router(actionContainer) {
     this.actionContainer = actionContainer;
 
     this.keyStrokes = '';
+
+    this.cleanFn;
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
         var type = keyStroke.getEventType();
+        // 只在 keypress 中获取字符
         if (keyStroke.isKeypress()) {
             this.keyStrokes += keyStroke.getKeyStroke();
         }
@@ -336,26 +343,44 @@ Router.prototype = new Proto(Router, {
     },
 
     execute: function (actions, keyStroke) {
+        var createThis = (function(self) {
+            return function() {
+                return {
+                    currentKeyStroke: keyStroke.getKeyStroke(),
+                    keyStrokes: self.keyStrokes,
+                    keyStroke: keyStroke
+                };
+            };
+        })(this);
+
         if (actions.length === 1) {
             var fns = actions[0].fns,
                 execute = fns.execute;
 
-            var that = {
-                currentKeyStroke: keyStroke.getKeyStroke(),
-                keyStrokes: this.keyStrokes,
-                keyStroke: keyStroke
-            };
+            this.setCleanFunc(fns.clean);
 
+            var that = createThis();
             var ret = execute.apply(that);
 
             if (ret) {
-                fns.clean && fns.clean.apply(that);
-
                 this.clearKeyStrokes();
             }
-        } else if (actions.length === 0 && keyStroke.isKeypress()) {
+        } else if (actions.length === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress‘ 是为了防止 keyup 中 清空 this.keyStrokes 属性
+            var that = createThis();
+            this.runClean(that);
             this.clearKeyStrokes();
         }
+    },
+
+    setCleanFunc: function(fn) {
+        if (typeof fn === 'function') {
+            this.cleanFn = fn;
+        }
+    },
+
+    runClean: function(that) {
+        var clean = this.cleanFn;
+        clean && clean.call(that);
     },
 
     clearKeyStrokes: function () {
@@ -650,7 +675,7 @@ var utils = (function() {
         nativeMap     = arrayProto.map,
         nativeFilter  = arrayProto.filter,
         nativeEvery   = arrayProto.every,
-        nativeTrim    = arrayProto.trim;
+        nativeTrim    = String.prototype.trim;
 
     var _ = {};
 
@@ -851,7 +876,7 @@ var V = (function() {
                 if (!utils.in_array(ids[i]), blackList) {
                     S.addActions(modules[i]);
                     
-                    logger('[V::init], init module: "' + ids[i] +'"');
+                    // logger('[V::init], init module: "' + ids[i] +'"');
                 }
             }
         }
@@ -861,11 +886,25 @@ var V = (function() {
 var CONSTANTS = {
     SCROLL_STEP: 200
 };
-
-
 var filterByTarget = function() {
     return this.isValidKeyStroke();
 };
+var BlurContainer = (function() {
+    var fns = [];
+
+    return {
+        add: function(fn) {
+            fns.push(fn);
+        },
+
+        execute: function() {
+            var fn;
+            while (fn = fns.shift()) {
+                fn();
+            }
+        }
+    };
+})();
 
 V.addKeypress('sayHello', {
     pattern: {
@@ -939,7 +978,7 @@ V.addKeypress('goBottom', {
             return true;
         }
     }
-})
+});
 
 V.addKeypress('goInsert', {
     pattern: {
@@ -1069,6 +1108,12 @@ var finderFactory = (function() {
         }
     }
 
+    function clean() {
+        document.body.removeChild(tagContainer);
+        tagContainer = null;
+        findedLinkTagPair = null;
+    }
+
     function execute() {
         var links,
             keyStrokes = this.keyStrokes;
@@ -1080,6 +1125,8 @@ var finderFactory = (function() {
             tagContainer = document.createElement('div');
             links = tagEachLink(links, tagContainer);
             findedLinkTagPair = links;
+
+            BlurContainer.add(clean);
 
             if (links.length == 0) {
                 return true;
@@ -1112,14 +1159,11 @@ var finderFactory = (function() {
             };
 
             click(links[0][1], keyStrokes.charAt(0) === 'F');
+
+            clean();
         }
 
         return true;
-    }
-    function clean() {
-        document.body.removeChild(tagContainer);
-        tagContainer = null;
-        findedLinkTagPair = null;
     }
 
     return  function (pattern) {
@@ -1135,7 +1179,6 @@ var finderFactory = (function() {
             }
         };
     }
-
 })();
 V.addKeypress('findf', finderFactory('^f.*'));
 V.addKeypress('findF', finderFactory('^F.*'));
@@ -1162,6 +1205,8 @@ V.addKeyup('blur', {
                     } catch(e) {}
                 }
             }
+
+            BlurContainer.execute();
 
             return true;
         }

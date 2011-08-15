@@ -282,6 +282,8 @@ function Router(actionContainer) {
     this.actionContainer = actionContainer;
 
     this.keyStrokes = '';
+
+    this.cleanFn;
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
@@ -341,26 +343,44 @@ Router.prototype = new Proto(Router, {
     },
 
     execute: function (actions, keyStroke) {
+        var createThis = (function(self) {
+            return function() {
+                return {
+                    currentKeyStroke: keyStroke.getKeyStroke(),
+                    keyStrokes: self.keyStrokes,
+                    keyStroke: keyStroke
+                };
+            };
+        })(this);
+
         if (actions.length === 1) {
             var fns = actions[0].fns,
                 execute = fns.execute;
 
-            var that = {
-                currentKeyStroke: keyStroke.getKeyStroke(),
-                keyStrokes: this.keyStrokes,
-                keyStroke: keyStroke
-            };
+            this.setCleanFunc(fns.clean);
 
+            var that = createThis();
             var ret = execute.apply(that);
 
             if (ret) {
-                fns.clean && fns.clean.apply(that);
-
                 this.clearKeyStrokes();
             }
         } else if (actions.length === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress‘ 是为了防止 keyup 中 清空 this.keyStrokes 属性
+            var that = createThis();
+            this.runClean(that);
             this.clearKeyStrokes();
         }
+    },
+
+    setCleanFunc: function(fn) {
+        if (typeof fn === 'function') {
+            this.cleanFn = fn;
+        }
+    },
+
+    runClean: function(that) {
+        var clean = this.cleanFn;
+        clean && clean.call(that);
     },
 
     clearKeyStrokes: function () {

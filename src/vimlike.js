@@ -372,7 +372,7 @@ var V = (function() {
                 if (!utils.in_array(ids[i]), blackList) {
                     S.addActions(modules[i]);
                     
-                    logger('[V::init], init module: "' + ids[i] +'"');
+                    // logger('[V::init], init module: "' + ids[i] +'"');
                 }
             }
         }
@@ -382,10 +382,25 @@ var V = (function() {
 var CONSTANTS = {
     SCROLL_STEP: 200
 };
-
 var filterByTarget = function() {
     return this.isValidKeyStroke();
 };
+var BlurContainer = (function() {
+    var fns = [];
+
+    return {
+        add: function(fn) {
+            fns.push(fn);
+        },
+
+        execute: function() {
+            var fn;
+            while (fn = fns.shift()) {
+                fn();
+            }
+        }
+    };
+})();
 
 V.addKeypress('sayHello', {
     pattern: {
@@ -459,7 +474,7 @@ V.addKeypress('goBottom', {
             return true;
         }
     }
-})
+});
 
 V.addKeypress('goInsert', {
     pattern: {
@@ -589,6 +604,12 @@ var finderFactory = (function() {
         }
     }
 
+    function clean() {
+        document.body.removeChild(tagContainer);
+        tagContainer = null;
+        findedLinkTagPair = null;
+    }
+
     function execute() {
         var links,
             keyStrokes = this.keyStrokes;
@@ -600,6 +621,8 @@ var finderFactory = (function() {
             tagContainer = document.createElement('div');
             links = tagEachLink(links, tagContainer);
             findedLinkTagPair = links;
+
+            BlurContainer.add(clean);
 
             if (links.length == 0) {
                 return true;
@@ -632,14 +655,11 @@ var finderFactory = (function() {
             };
 
             click(links[0][1], keyStrokes.charAt(0) === 'F');
+
+            clean();
         }
 
         return true;
-    }
-    function clean() {
-        document.body.removeChild(tagContainer);
-        tagContainer = null;
-        findedLinkTagPair = null;
     }
 
     return  function (pattern) {
@@ -655,7 +675,6 @@ var finderFactory = (function() {
             }
         };
     }
-
 })();
 V.addKeypress('findf', finderFactory('^f.*'));
 V.addKeypress('findF', finderFactory('^F.*'));
@@ -682,6 +701,8 @@ V.addKeyup('blur', {
                     } catch(e) {}
                 }
             }
+
+            BlurContainer.execute();
 
             return true;
         }
