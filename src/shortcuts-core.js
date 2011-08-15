@@ -251,6 +251,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   },
      *   fns: {
      *     filter: function() {},
+     *     setup: function() {},
      *     execute: function() {},
      *     clean: function() {}
      *   }
@@ -283,6 +284,7 @@ function Router(actionContainer) {
 
     this.keyStrokes = '';
 
+    this.setupFn;
     this.cleanFn;
 }
 Router.prototype = new Proto(Router, {
@@ -360,15 +362,25 @@ Router.prototype = new Proto(Router, {
             this.setCleanFunc(fns.clean);
 
             var that = createThis();
+            this.runSetup(that);
             var ret = execute.apply(that);
+
+            this.setSetupFunc(fns.setup);
 
             if (ret) {
                 this.clearKeyStrokes();
             }
         } else if (actions.length === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress‘ 是为了防止 keyup 中 清空 this.keyStrokes 属性
             var that = createThis();
+            this.runSetup(that);
             this.runClean(that);
             this.clearKeyStrokes();
+        }
+    },
+
+    setSetupFunc: function(fn) {
+        if (typeof fn === 'function') {
+            this.setupFn = fn;
         }
     },
 
@@ -378,9 +390,16 @@ Router.prototype = new Proto(Router, {
         }
     },
 
+    runSetup: function(that) {
+        var setup = this.setupFn;
+        setup && setup.call(that);
+        this.setupFn = null;
+    },
+
     runClean: function(that) {
         var clean = this.cleanFn;
         clean && clean.call(that);
+        this.cleanFn = null;
     },
 
     clearKeyStrokes: function () {
