@@ -136,13 +136,6 @@ var Event = {
     EventObject: function(event) {
         event = event || window.event;
         
-        // TODO: test why?
-        // WHY: prototype error
-        // var F = function() {};
-        // F.prototype = event;
-        // var e = new F();
-        // e.originalEvent = event;
-
         // COPY property
         var e = {};
         e.originalEvent = event;
@@ -153,7 +146,6 @@ var Event = {
             e[prop] = event[prop];
         }
 
-        
         // normalize if necessary
         if (!e.target) {
             e.target = event.srcElement || document;
@@ -196,7 +188,6 @@ KeyStroke.prototype = new Proto(KeyStroke, {
         var tagName = this.event.target.tagName.toLowerCase();
 
         if (utils.in_array(tagName, INVALID_TARGETS)) {
-            logger('[KeyStroke::isValidKeyStroke]', 'event target: "' + tagName + '", Invalid Keystroke!');
             return false;
         }
 
@@ -250,10 +241,10 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *     value: 'zhanglin'
      *   },
      *   fns: {
-     *     filter: function() {},
-     *     setup: function() {},
-     *     execute: function() {},
-     *     clean: function() {}
+     *     filter: function(keyStroke) {},
+     *     setup: function(keyStroke) {},
+     *     execute: function(keyStroke) {},
+     *     clean: function(keyStroke) {}
      *   }
      * }
      */
@@ -267,8 +258,6 @@ ActionContainer.prototype = new Proto(ActionContainer, {
                 pattern: action.pattern,
                 fns: action.fns
             }
-
-            // logger('[ActionContainer::addActions] type: "' + type + '", action: ', _action);
 
             this.actions[type].push(_action);
         }
@@ -301,6 +290,7 @@ Router.prototype = new Proto(Router, {
 
     filterActions: function (actions, keyStroke) { // utils.filter
         var results = [],
+            currentKeyStroke = keyStroke.getKeyStroke(),
             keyStrokes = this.keyStrokes;
 
         var i = 0,
@@ -335,7 +325,7 @@ Router.prototype = new Proto(Router, {
         function customFilter(action) {
             var fn = action.fns && action.fns.filter;
             if (typeof fn === 'function') {
-                if (fn.call(keyStroke)) {
+                if (fn(currentKeyStroke, keyStrokes, keyStroke)) {
                     results.push(action);
                 }
             } else {
@@ -345,15 +335,8 @@ Router.prototype = new Proto(Router, {
     },
 
     execute: function (actions, keyStroke) {
-        var createThis = (function(self) {
-            return function() {
-                return {
-                    currentKeyStroke: keyStroke.getKeyStroke(),
-                    keyStrokes: self.keyStrokes,
-                    keyStroke: keyStroke
-                };
-            };
-        })(this);
+        var currentKeyStroke = keyStroke.getKeyStroke(),
+            keyStrokes = this.keyStrokes;
 
         if (actions.length === 1) {
             var fns = actions[0].fns,
@@ -361,9 +344,8 @@ Router.prototype = new Proto(Router, {
 
             this.setCleanFunc(fns.clean);
 
-            var that = createThis();
-            this.runSetup(that);
-            var ret = execute.apply(that);
+            this.runSetup(currentKeyStroke, keyStrokes, keyStroke);
+            var ret = execute(currentKeyStroke, keyStrokes, keyStroke);
 
             this.setSetupFunc(fns.setup);
 
@@ -371,9 +353,8 @@ Router.prototype = new Proto(Router, {
                 this.clearKeyStrokes();
             }
         } else if (actions.length === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress‘ 是为了防止 keyup 中 清空 this.keyStrokes 属性
-            var that = createThis();
-            this.runSetup(that);
-            this.runClean(that);
+            this.runSetup(currentKeyStroke, keyStrokes, keyStroke);
+            this.runClean(currentKeyStroke, keyStrokes, keyStroke);
             this.clearKeyStrokes();
         }
     },
@@ -390,15 +371,15 @@ Router.prototype = new Proto(Router, {
         }
     },
 
-    runSetup: function(that) {
+    runSetup: function(currentKeyStroke, keyStrokes, keyStroke) {
         var setup = this.setupFn;
-        setup && setup.call(that);
+        setup && setup(currentKeyStroke, keyStrokes, keyStroke);
         this.setupFn = null;
     },
 
-    runClean: function(that) {
+    runClean: function(currentKeyStroke, keyStrokes, keyStroke) {
         var clean = this.cleanFn;
-        clean && clean.call(that);
+        clean && clean(currentKeyStroke, keyStrokes, keyStroke);
         this.cleanFn = null;
     },
 
@@ -980,8 +961,8 @@ var CONSTANTS = {
         WIDTH: 800
     }
 };
-var filterByTarget = function() {
-    return this.isValidKeyStroke();
+var filterByTarget = function(c, s, keyStroke) {
+    return keyStroke.isValidKeyStroke();
 };
 var BlurContainer = (function() {
     var fns = [];
@@ -1006,8 +987,8 @@ V.addKeypress('sayHello', {
     },
     fns: {
         filter: filterByTarget,
-        execute: function() {
-            if (this.keyStrokes == 'zhanglin') {
+        execute: function(c, keyStrokes) {
+            if (keyStrokes == 'zhanglin') {
                 alert('hello, you just hit my name: "zhanglin"! sorry for this alert');
 
                 return true;
@@ -1050,8 +1031,8 @@ V.addKeypress('goTop', {
     },
     fns: {
         filter: filterByTarget,
-        execute: function () {
-            if (this.keyStrokes === 'gg') {
+        execute: function (c, keyStrokes) {
+            if (keyStrokes === 'gg') {
                 logger('gotop');
                 window.scrollTo(0, 0);
                 return true;
@@ -1081,13 +1062,13 @@ V.addKeypress('goInsert', {
     },
     fns: {
         filter: filterByTarget,
-        execute: function () {
-            if (this.currentKeyStroke !== 'i') {
+        execute: function (currentKeyStroke, keyStrokes) {
+            if (currentKeyStroke !== 'i') {
                 return;
             }
 
             // 获取第几个
-            var focusIndex = String(this.keyStrokes).match(/\d+/);
+            var focusIndex = String(keyStrokes).match(/\d+/);
             focusIndex = focusIndex && focusIndex[0];
             focusIndex = parseInt((focusIndex || 1), 10);
 
@@ -1210,9 +1191,9 @@ var finderFactory = (function() {
         findedLinkTagPair = null;
     }
 
-    function execute() {
+    function execute(currentKeyStroke, keyStrokes, keyStroke) {
         var links,
-            keyStrokes = this.keyStrokes;
+            keyStrokes = keyStrokes;
 
         if (keyStrokes.toLowerCase() == 'f') { // 'f' 编号
             links = document.links;
@@ -1281,8 +1262,8 @@ V.addKeypress('findF', finderFactory('^F.*'));
 
 V.addKeyup('blur', {
     fns: {
-        filter: function () {
-            return this.isEscape();
+        filter: function (c, s, keyStroke) {
+            return keyStroke.isEscape();
         },
         execute: function() {
             var activeElement,

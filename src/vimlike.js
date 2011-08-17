@@ -457,8 +457,8 @@ var CONSTANTS = {
         WIDTH: 800
     }
 };
-var filterByTarget = function() {
-    return this.isValidKeyStroke();
+var filterByTarget = function(c, s, keyStroke) {
+    return keyStroke.isValidKeyStroke();
 };
 var BlurContainer = (function() {
     var fns = [];
@@ -483,8 +483,8 @@ V.addKeypress('sayHello', {
     },
     fns: {
         filter: filterByTarget,
-        execute: function() {
-            if (this.keyStrokes == 'zhanglin') {
+        execute: function(c, keyStrokes) {
+            if (keyStrokes == 'zhanglin') {
                 alert('hello, you just hit my name: "zhanglin"! sorry for this alert');
 
                 return true;
@@ -527,8 +527,8 @@ V.addKeypress('goTop', {
     },
     fns: {
         filter: filterByTarget,
-        execute: function () {
-            if (this.keyStrokes === 'gg') {
+        execute: function (c, keyStrokes) {
+            if (keyStrokes === 'gg') {
                 logger('gotop');
                 window.scrollTo(0, 0);
                 return true;
@@ -558,13 +558,13 @@ V.addKeypress('goInsert', {
     },
     fns: {
         filter: filterByTarget,
-        execute: function () {
-            if (this.currentKeyStroke !== 'i') {
+        execute: function (currentKeyStroke, keyStrokes) {
+            if (currentKeyStroke !== 'i') {
                 return;
             }
 
             // 获取第几个
-            var focusIndex = String(this.keyStrokes).match(/\d+/);
+            var focusIndex = String(keyStrokes).match(/\d+/);
             focusIndex = focusIndex && focusIndex[0];
             focusIndex = parseInt((focusIndex || 1), 10);
 
@@ -687,9 +687,9 @@ var finderFactory = (function() {
         findedLinkTagPair = null;
     }
 
-    function execute() {
+    function execute(currentKeyStroke, keyStrokes, keyStroke) {
         var links,
-            keyStrokes = this.keyStrokes;
+            keyStrokes = keyStrokes;
 
         if (keyStrokes.toLowerCase() == 'f') { // 'f' 编号
             links = document.links;
@@ -758,8 +758,8 @@ V.addKeypress('findF', finderFactory('^F.*'));
 
 V.addKeyup('blur', {
     fns: {
-        filter: function () {
-            return this.isEscape();
+        filter: function (c, s, keyStroke) {
+            return keyStroke.isEscape();
         },
         execute: function() {
             var activeElement,
