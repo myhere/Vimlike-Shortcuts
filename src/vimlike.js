@@ -680,7 +680,9 @@ var finderFactory = (function() {
     }
 
     function clean() {
-        document.body.removeChild(tagContainer);
+        try {
+            document.body.removeChild(tagContainer);
+        } catch (e) {}
         tagContainer = null;
         findedLinkTagPair = null;
     }

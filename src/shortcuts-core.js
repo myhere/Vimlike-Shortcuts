@@ -268,7 +268,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
                 fns: action.fns
             }
 
-            logger('[ActionContainer::addActions] type: "' + type + '", action: ', _action);
+            // logger('[ActionContainer::addActions] type: "' + type + '", action: ', _action);
 
             this.actions[type].push(_action);
         }
