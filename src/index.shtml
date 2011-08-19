@@ -1,0 +1,21 @@
+<!doctype html> 
+<html> 
+<head> 
+<meta charset="utf-8" /> 
+<title>vimlike-shortcuts</title> 
+</head> 
+<body> 
+    <p>请将输入法切换到英文状态, <a href="javascript:(function(v){ !!v ? v.toggle() : (function(d, s) { s = document.createElement('script'); s.charset = 'utf-8'; s.src = 'http://localhost/dev/Vimlike-Shortcuts/build/vimlike-shortcuts.js?t=' + (+new Date); d.getElementsByTagName('head')[0].appendChild(s); })(document); })(window.shortcuts);;">点我启用</a><p> 
+<script> 
+(function(v){
+    !!v ? v.toggle() : (function(d, s) {
+        s = document.createElement('script');
+        s.charset = 'utf-8';
+        s.src = 'http://localhost/dev/Vimlike-Shortcuts/build/vimlike-shortcuts.js?t=' + (+new Date);
+        d.getElementsByTagName('head')[0].appendChild(s);
+    })(document);
+})(window.shortcuts);
+</script> 
+</body> 
+</html> 
+
