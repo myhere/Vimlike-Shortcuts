@@ -241,10 +241,10 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *     value: 'zhanglin'
      *   },
      *   fns: {
-     *     filter: function(keyStroke) {},
-     *     setup: function(keyStroke) {},
-     *     execute: function(keyStroke) {},
-     *     clean: function(keyStroke) {}
+     *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
+     *     setup: function(currentKeyStroke, keyStrokes, keyStroke) {},
+     *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
+     *     clean: function(currentKeyStroke, keyStrokes, keyStroke) {}
      *   }
      * }
      */
@@ -502,6 +502,11 @@ main();
 
 })();
 
+/**
+ * TODO:
+ * 1, 支持同一个按键绑定多个函数
+ * 2，支持查询绑定了那些按键
+ */
 /**
  * @fileoverview
  * 
@@ -1322,7 +1327,7 @@ V.addKeypress('help', function() {
 
     return {
         pattern: {
-            value: '?',
+            value: '?'
         },
         fns: {
             filter: filterByTarget,

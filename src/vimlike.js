@@ -818,7 +818,7 @@ V.addKeypress('help', function() {
 
     return {
         pattern: {
-            value: '?',
+            value: '?'
         },
         fns: {
             filter: filterByTarget,
