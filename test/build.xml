@@ -1,0 +1,18 @@
+<project name="vimlike-shortcuts" default="build" basedir=".">
+    <description>Vimlike-Shortcuts Build File</description>
+
+    <property name="encoding.input" value="utf-8" />
+    <property name="encoding.output" value="utf-8" />
+
+    <target name="build" depends="concat-test">
+    </target>
+
+    <target name="concat-test">
+        <concat destfile="./shortcuts-test.js"
+                encoding="${encoding.input}"
+                outputencoding="${encoding.output}">
+            <path path="../src/shortcuts-core.js"  />
+            <path path="test.js"  />
+        </concat>
+    </target>
+</project>
