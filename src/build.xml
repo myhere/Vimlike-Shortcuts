@@ -4,10 +4,10 @@
     <property name="encoding.input" value="utf-8" />
     <property name="encoding.output" value="utf-8" />
 
-    <target name="build" depends="concat">
+    <target name="build" depends="concat-vimlike">
     </target>
 
-    <target name="concat" >
+    <target name="concat-vimlike" >
         <concat destfile="../build/vimlike-shortcuts.js"
                 encoding="${encoding.input}"
                 outputencoding="${encoding.output}">
@@ -15,4 +15,13 @@
             <path path="vimlike.js"  />
         </concat>
     </target>
+
+    <!--<target name="concat-test">-->
+        <!--<concat destfile="../build/shortcuts-test.js"-->
+                <!--encoding="${encoding.input}"-->
+                <!--outputencoding="${encoding.output}">-->
+            <!--<path path="shortcuts-core.js"  />-->
+            <!--<path path="test.js"  />-->
+        <!--</concat>-->
+    <!--</target>-->
 </project>
