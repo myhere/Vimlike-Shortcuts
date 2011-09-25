@@ -396,7 +396,7 @@ var CONSTANTS = {
     '<vim010main>'+
         '<vim010hd>'+
             '<vim010hd-lt>Vim-like Shortcut Help</vim010hd-lt>'+
-            '<vim010hd-rt><vim010-btn title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
+            '<vim010hd-rt><vim010-btn id="vimlike:bookmarlet:closeBtn" title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
         '</vim010hd>'+
         '<vim010bd>'+
             '<vim010bd-row-lt>'+
@@ -825,12 +825,10 @@ V.addKeyup('blur', {
                     // ie 下直接设置 innerHTML 不会有样式
                     setTimeout(function() {
                         helpContainer.innerHTML = HELP_VIEW.HTML;
+                        document.body.appendChild(helpContainer);
+                        // 绑定 close 函数
+                        bindHelpCloseBtn();
                     }, 10);
-
-                    document.body.appendChild(helpContainer);
-
-                    // 绑定 close 函数
-                    bindHelpCloseBtn();
                 }
 
                 // 调整位置
