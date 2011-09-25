@@ -41,7 +41,7 @@ function logger() {
         }
     } 
 }
-logger.LOG_LEVEL = 'debug';
+logger.LOG_LEVEL = '@debug@';
 
 var utils = {
     in_array: function(item, array) {
@@ -243,6 +243,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
+     *     clean: function(currentKeyStroke, keyStrokes, keyStroke)
      *   }
      * }
      */
@@ -263,6 +264,10 @@ ActionContainer.prototype = new Proto(ActionContainer, {
 
     getActions: function (type) {
         return this.actions[type] || [];
+    },
+
+    getAllActions: function() {
+        return this.actions;
     }
 });
 
@@ -270,9 +275,6 @@ function Router(actionContainer) {
     this.actionContainer = actionContainer;
 
     this.keyStrokes = '';
-
-    this.setupFn;
-    this.cleanFn;
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
@@ -310,10 +312,14 @@ Router.prototype = new Proto(Router, {
                     value = new RegExp(value);
                     if (value.test(keyStrokes)) {
                         customFilter(action);
+                    } else {
+                        executeClean(action);
                     }
                 } else { 
                     if (value.indexOf(keyStrokes) === 0) {
                         customFilter(action);
+                    } else {
+                        executeClean(action);
                     }
                 }
             } else {
@@ -323,12 +329,24 @@ Router.prototype = new Proto(Router, {
 
         function customFilter(action) {
             var fn = action.fns && action.fns.filter;
+            var clean = action.fns && action.fns.clean;
             if (typeof fn === 'function') {
                 if (fn(currentKeyStroke, keyStrokes, keyStroke)) {
                     results.push(action);
+                } { // 执行不符合按键的 action 的 clean 函数
+                    executeClean(action)
                 }
             } else {
                 results.push(action);
+            }
+        }
+
+        // 执行被过滤掉的 clean 函数
+        function executeClean(action) {
+            var clean = action.fns && action.fns.clean;
+
+            if (typeof clean === 'function') {
+                clean(currentKeyStroke, keyStrokes, keyStroke);
             }
         }
     },
@@ -437,25 +455,38 @@ function extractToWindow(controller, actionContainer) {
             }
 
             function add(action) {
-                var type,
-                    valid = true,
-                    types = utils.trim(action.type || '');
+                var type = utils.trim(action.type || '');
 
-                types = types.split(/\s+/);
-                while (type = types.pop()) {
-                    if (!isValidEventType(type)) {
-                        valid = false;
-                        break;
-                    }
-                }
-
-                if (valid) {
+                if (isValidEventType(type)) {
                     actionContainer.addAction(action);
                 } else {
                     throw new Error('[shortcuts::addActions], invalid type: ' + action.type);
                 }
             }
-        }
+        },
+        
+        getActions: function(type) {
+            var ret = [];
+            if (isValidEventType(type)) {
+                ret = actionContainer.getActions(type);
+            } else {
+                ret = actionContainer.getAllActions();
+            }
+
+            return ret;
+        },
+
+        logger: {
+            on: function() {
+                logger.LOG_LEVEL = 'debug';
+            },
+            off: function() {
+                logger.LOG_LEVEL = 'Hello World!~';
+            },
+            log: function() {
+                logger.apply(null, arguments);
+            }
+        } 
     }
 
     // guard for api
@@ -479,12 +510,6 @@ function main() {
 main();
 
 })();
-
-/**
- * TODO:
- * 1, 支持同一个按键绑定多个函数
- * 2，支持查询绑定了那些按键
- */
 /**
  * @fileoverview
  * 
@@ -499,6 +524,9 @@ main();
  * Functions for initializing
  */
 (function(S) {
+
+logger = S.logger;
+logger.on();
 
 var DOM = {
     /**
@@ -804,24 +832,6 @@ var utils = (function() {
     return _;
 })();
 
-function logger() {
-    if (logger.LOG_LEVEL !== 'debug') {
-        return;
-    }
-
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(+new Date + ':');
-
-    var log = window.console && console.log;
-    if (log) {
-        if (log.apply) {
-            log.apply(console, args);
-        } else {
-            console.log(args);
-        }
-    } 
-}
-logger.LOG_LEVEL = 'debug';
 
 // 便于功能模块的增加
 var V = (function() {
@@ -859,7 +869,7 @@ var V = (function() {
                 if (!utils.in_array(ids[i]), blackList) {
                     S.addActions(modules[i]);
                     
-                    // logger('[V::init], init module: "' + ids[i] +'"');
+                    // logger.log('[V::init], init module: "' + ids[i] +'"');
                 }
             }
         }
@@ -868,9 +878,13 @@ var V = (function() {
 
 var CONSTANTS = {
     SCROLL_STEP: 200,
+    FIND_STYLE: {
+        STYLE_ID: 'vimlike:findStyleId',
+        STYLE: '.vimlike-shortcuts-found-tag{position:absolute;z-index:99999;background-color:yellow;color:black;padding:0 1px;border:solid 1px #E3BE23;text-decoration:none;font:bold 12px "Helvetica Neue", "Helvetica", "Arial", "Sans";}'
+    },
     HELP_VIEW: {
-        STYLE_ID: 'vimlike:bookmarklet:styleID',
-        HTML_ID: 'vimlike:bookmarklet:htmlID',
+        STYLE_ID: 'vimlike:helpStyleId',
+        HTML_ID: 'vimlike:helpHtmlId',
         STYLE: '\
                 .vim-bml-wrapper{width:100%;height:100%;overflow:hidden;border-radius:8px;background-color:#333;opacity:0.85;filter:alpha(opacity=85);}\
                 .vim-bml-wrapper td,.vim-bml-wrapper th{background:transparent;color:#fff;font-family:arial,sans-serif;}\
@@ -947,22 +961,6 @@ var CONSTANTS = {
 var filterByTarget = function(c, s, keyStroke) {
     return keyStroke.isValidKeyStroke();
 };
-var BlurContainer = (function() {
-    var fns = [];
-
-    return {
-        add: function(fn) {
-            fns.push(fn);
-        },
-
-        execute: function() {
-            var fn;
-            while (fn = fns.shift()) {
-                fn();
-            }
-        }
-    };
-})();
 
 V.addKeypress('sayHello', {
     pattern: {
@@ -1016,7 +1014,7 @@ V.addKeypress('goTop', {
         filter: filterByTarget,
         execute: function (c, keyStrokes) {
             if (keyStrokes === 'gg') {
-                logger('gotop');
+                logger.log('gotop');
                 window.scrollTo(0, 0);
                 return true;
             }
@@ -1084,8 +1082,6 @@ V.addKeypress('goInsert', {
     var tagContainer,
         findedLinkTagPair;
 
-    var FINDED_TAG_cssText = 'position:absolute;z-index:99999;background-color:yellow;color:black;padding:0 1px;border:solid 1px #E3BE23;text-decoration:none;font:bold 12px "Helvetica Neue", "Helvetica", "Arial", "Sans";';
-
     function filterLinks(findedLinkTagPair, currentKeyStrokes, tagContainer) {
         var suffix = currentKeyStrokes.substr(1);
 
@@ -1122,9 +1118,9 @@ V.addKeypress('goInsert', {
             }
 
             var ins = document.createElement('ins');
-            var cssText = FINDED_TAG_cssText;
+            ins.className = 'vimlike-shortcuts-found-tag'; 
             var ele_pos = DOM.getElementPosition(link);
-            cssText += 'left:' + ele_pos.left + 'px;top:' + ele_pos.top + 'px;';
+            var cssText = 'left:' + ele_pos.left + 'px;top:' + ele_pos.top + 'px;';
             ins.style.cssText = cssText;
             ins.innerHTML = vim_key;
             tagContainer.appendChild(ins);
@@ -1132,6 +1128,13 @@ V.addKeypress('goInsert', {
             findedLinkTagPair.push([vim_key, link, ins]);
         });
 
+        // 没有样式时添加
+        var FIND_STYLE = CONSTANTS.FIND_STYLE;
+        if (!document.getElementById(FIND_STYLE.STYLE_ID)) {
+            DOM.addStyleSheet(FIND_STYLE.STYLE, {
+                id: FIND_STYLE.STYLE_ID
+            });
+        }
         document.body.appendChild(tagContainer);
 
         return findedLinkTagPair;
@@ -1139,7 +1142,7 @@ V.addKeypress('goInsert', {
     function fireClick(ele) {
         // hack for so safe Firefox
         if (/Firefox/.test(navigator.userAgent)) {
-            logger('[fireClick], firefox, special click');
+            logger.log('[fireClick], firefox, special click');
             var attr_target = ele.getAttribute('target');
             if (!attr_target || attr_target == '_self') { // self tab
                 location.href = ele.href;
@@ -1156,10 +1159,10 @@ V.addKeypress('goInsert', {
             var canceled = ! ele.dispatchEvent(evt);
             if(canceled) {
                 // A handler called preventDefault
-                logger("[fireClick], canceled");
+                logger.log("[fireClick], canceled");
             } else {
                 // None of the handlers called preventDefault
-                logger("[fireClick], not canceled");
+                logger.log("[fireClick], not canceled");
             }
         } else {
             ele.click();
@@ -1185,8 +1188,6 @@ V.addKeypress('goInsert', {
             tagContainer = document.createElement('div');
             links = tagEachLink(links, tagContainer);
             findedLinkTagPair = links;
-
-            // BlurContainer.add(clean);
 
             if (links.length == 0) {
                 return true;
@@ -1277,8 +1278,6 @@ V.addKeyup('blur', {
                 }
             }
 
-            // BlurContainer.execute();
-
             return true;
         }
     }
@@ -1341,8 +1340,6 @@ V.addKeyup('blur', {
                     bindHelpCloseBtn();
                 }
 
-                // BlurContainer.add(hideHelp);
-
                 // 调整位置
                 var WIDTH  = HELP_VIEW.WIDTH,
                     left, top;
@@ -1351,6 +1348,9 @@ V.addKeyup('blur', {
                 helpContainer.style.cssText = 'display:block;position:absolute;top:'+top+'px;left:'+left+'px;z-index:99999;width:'+WIDTH+'px;';
 
                 return true;
+            },
+            clean: function() {
+                hideHelp();
             }
         }
     });

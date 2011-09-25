@@ -1,4 +1,6 @@
 (function(S) {
+var logger = S.logger;
+logger.on();
 
 var filterByTarget = function(c, s, keyStroke) {
     return keyStroke.isValidKeyStroke();
@@ -106,5 +108,7 @@ S.addActions(
 );
 
 S.bindEvents(['keypress', 'keyup']);
+
+logger.log(S.getActions('adfds'));
 
 })(this.shortcuts);

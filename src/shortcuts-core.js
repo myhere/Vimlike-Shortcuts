@@ -41,7 +41,7 @@ function logger() {
         }
     } 
 }
-logger.LOG_LEVEL = 'debug';
+logger.LOG_LEVEL = '@debug@';
 
 var utils = {
     in_array: function(item, array) {
@@ -264,6 +264,10 @@ ActionContainer.prototype = new Proto(ActionContainer, {
 
     getActions: function (type) {
         return this.actions[type] || [];
+    },
+
+    getAllActions: function() {
+        return this.actions;
     }
 });
 
@@ -271,9 +275,6 @@ function Router(actionContainer) {
     this.actionContainer = actionContainer;
 
     this.keyStrokes = '';
-
-    this.setupFn;
-    this.cleanFn;
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
@@ -454,25 +455,38 @@ function extractToWindow(controller, actionContainer) {
             }
 
             function add(action) {
-                var type,
-                    valid = true,
-                    types = utils.trim(action.type || '');
+                var type = utils.trim(action.type || '');
 
-                types = types.split(/\s+/);
-                while (type = types.pop()) {
-                    if (!isValidEventType(type)) {
-                        valid = false;
-                        break;
-                    }
-                }
-
-                if (valid) {
+                if (isValidEventType(type)) {
                     actionContainer.addAction(action);
                 } else {
                     throw new Error('[shortcuts::addActions], invalid type: ' + action.type);
                 }
             }
-        }
+        },
+        
+        getActions: function(type) {
+            var ret = [];
+            if (isValidEventType(type)) {
+                ret = actionContainer.getActions(type);
+            } else {
+                ret = actionContainer.getAllActions();
+            }
+
+            return ret;
+        },
+
+        logger: {
+            on: function() {
+                logger.LOG_LEVEL = 'debug';
+            },
+            off: function() {
+                logger.LOG_LEVEL = 'Hello World!~';
+            },
+            log: function() {
+                logger.apply(null, arguments);
+            }
+        } 
     }
 
     // guard for api
@@ -496,9 +510,3 @@ function main() {
 main();
 
 })();
-
-/**
- * TODO:
- * 1, 支持同一个按键绑定多个函数
- * 2，支持查询绑定了那些按键
- */
