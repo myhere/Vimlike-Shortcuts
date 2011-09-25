@@ -12,7 +12,7 @@
     !!v ? v.toggle() : (function(d, s) {
         s = document.createElement('script');
         s.charset = 'utf-8';
-        s.src = 'http://localhost/dev/Vimlike-Shortcuts/build/vimlike-shortcuts.js?t=' + (+new Date);
+        s.src = 'http://localhost/dev/Vimlike-Shortcuts/test/shortcuts-test.js?t=' + (+new Date);
         d.getElementsByTagName('head')[0].appendChild(s);
     })(document);
 })(window.shortcuts);

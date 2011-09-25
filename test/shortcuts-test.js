@@ -30,7 +30,7 @@ function logger() {
     }
 
     var args = Array.prototype.slice.call(arguments);
-    args.unshift(+new Date + ':');
+    // args.unshift(+new Date + ':');
 
     var log = window.console && console.log;
     if (log) {
@@ -242,9 +242,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   },
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     setup: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     clean: function(currentKeyStroke, keyStrokes, keyStroke) {}
      *   }
      * }
      */
@@ -285,6 +283,7 @@ Router.prototype = new Proto(Router, {
         }
         var actions = this.actionContainer.getActions(type);
         actions = this.filterActions(actions, keyStroke);
+        logger('[Router::handle], matched actioins: ', actions);
         this.execute(actions, keyStroke);
     },
 
@@ -338,49 +337,28 @@ Router.prototype = new Proto(Router, {
         var currentKeyStroke = keyStroke.getKeyStroke(),
             keyStrokes = this.keyStrokes;
 
-        if (actions.length === 1) {
-            var fns = actions[0].fns,
+        var len = actions.length;
+        if (len > 0) {
+            var i = 0,
+                fns,
+                execute,
+                allFinished = true,
+                ret;
+            for (; i < len; ++i) {
+                fns = actions[i].fns;
                 execute = fns.execute;
 
-            this.setCleanFunc(fns.clean);
+                logger('[Router::execute], ',this,currentKeyStroke, keyStrokes, keyStroke);
+                ret = execute(currentKeyStroke, keyStrokes, keyStroke);
+                allFinished = ret && allFinished;
+            }
 
-            this.runSetup(currentKeyStroke, keyStrokes, keyStroke);
-            var ret = execute(currentKeyStroke, keyStrokes, keyStroke);
-
-            this.setSetupFunc(fns.setup);
-
-            if (ret) {
+            if (allFinished) {
                 this.clearKeyStrokes();
             }
-        } else if (actions.length === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress‘ 是为了防止 keyup 中 清空 this.keyStrokes 属性
-            this.runSetup(currentKeyStroke, keyStrokes, keyStroke);
-            this.runClean(currentKeyStroke, keyStrokes, keyStroke);
+        } else if (len === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress' 是为了防止 keyup 中 清空 this.keyStrokes 属性
             this.clearKeyStrokes();
         }
-    },
-
-    setSetupFunc: function(fn) {
-        if (typeof fn === 'function') {
-            this.setupFn = fn;
-        }
-    },
-
-    setCleanFunc: function(fn) {
-        if (typeof fn === 'function') {
-            this.cleanFn = fn;
-        }
-    },
-
-    runSetup: function(currentKeyStroke, keyStrokes, keyStroke) {
-        var setup = this.setupFn;
-        setup && setup(currentKeyStroke, keyStrokes, keyStroke);
-        this.setupFn = null;
-    },
-
-    runClean: function(currentKeyStroke, keyStrokes, keyStroke) {
-        var clean = this.cleanFn;
-        clean && clean(currentKeyStroke, keyStrokes, keyStroke);
-        this.cleanFn = null;
     },
 
     clearKeyStrokes: function () {
@@ -507,3 +485,95 @@ main();
  * 1, 支持同一个按键绑定多个函数
  * 2，支持查询绑定了那些按键
  */
+(function(S) {
+
+var filterByTarget = function(c, s, keyStroke) {
+    return keyStroke.isValidKeyStroke();
+};
+
+S.addActions(
+    [
+        {
+            type:'keypress',
+            pattern: {
+                value: 'zhang'
+            },
+            fns: {
+                filter: filterByTarget,
+                execute: function(c, s, keyStroke) {
+                    if (s === 'zhang') {
+                        var div_ele = document.createElement('div');
+                        div_ele.innerHTML = 'zhang';
+                        div_ele.style.cssText = 'height:200px;width:200px;background-color:green;';
+                        div_ele.id='sc:test:zhang';
+                        document.body.appendChild(div_ele);
+                        return true;
+                    }
+                }
+            }
+        },
+        {
+            type:'keypress',
+            pattern: {
+                value: 'zhanglin'
+            },
+            fns: {
+                filter: filterByTarget,
+                execute: function(c, s, keyStroke) {
+                    if (s === 'zhanglin') {
+                        var div_ele = document.createElement('div');
+                        div_ele.innerHTML = 'zhanglin1';
+                        div_ele.style.cssText = 'height:200px;width:200px;background-color:blue;';
+                        div_ele.id='sc:test:zhanglin1';
+                        document.body.appendChild(div_ele);
+                        return true;
+                    }
+                }
+            }
+        },
+        {
+            type:'keypress',
+            pattern: {
+                value: 'zhanglin'
+            },
+            fns: {
+                filter: filterByTarget,
+                execute: function(c, s, keyStroke) {
+                    if (s === 'zhanglin') {
+                        var div_ele = document.createElement('div');
+                        div_ele.innerHTML = 'zhanglin2';
+                        div_ele.style.cssText = 'height:200px;width:200px;background-color:yellow;';
+                        div_ele.id='sc:test:zhanglin2';
+                        document.body.appendChild(div_ele);
+                        return true;
+                    }
+                }
+            }
+        },
+        {
+            type: 'keyup',
+            fns: {
+                filter: function(c, s, keyStroke) {
+                    return keyStroke.isEscape();
+                },
+                execute: function() {
+                    var e1 = document.getElementById('sc:test:zhang'),
+                        e2 = document.getElementById('sc:test:zhanglin1'),
+                        e3 = document.getElementById('sc:test:zhanglin2');
+
+                    try {
+                        document.body.removeChild(e1);
+                        document.body.removeChild(e2);
+                        document.body.removeChild(e3);
+                    } catch(e) {}
+
+                    return true;
+                }
+            }
+        }
+    ]
+);
+
+S.bindEvents(['keypress', 'keyup']);
+
+})(this.shortcuts);

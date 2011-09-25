@@ -593,7 +593,7 @@ V.addKeypress('goInsert', {
     }
 });
 
-var finderFactory = (function() {
+(function() {
     var tagContainer,
         findedLinkTagPair;
 
@@ -699,7 +699,7 @@ var finderFactory = (function() {
             links = tagEachLink(links, tagContainer);
             findedLinkTagPair = links;
 
-            BlurContainer.add(clean);
+            // BlurContainer.add(clean);
 
             if (links.length == 0) {
                 return true;
@@ -739,22 +739,33 @@ var finderFactory = (function() {
         return true;
     }
 
-    return  function (pattern) {
+    var finderFactory = function(pattern) {
         return {
+            type: pattern,
             pattern: {
                 isRegExp: true,
                 value: pattern
             },
             fns: {
                 filter: filterByTarget,
-                execute: execute,
-                clean: clean
+                execute: execute
             }
         };
-    }
+    };
+    V.addKeypress('findf', finderFactory('^f.*'));
+    V.addKeypress('findF', finderFactory('^F.*'));
+    V.addKeyup('findCleaner', {
+        fns: {
+            filter: function (c, s, keyStroke) {
+                return keyStroke.isEscape();
+            },
+            execute: function() {
+                clean();
+                return true;
+            }
+        }
+    });
 })();
-V.addKeypress('findf', finderFactory('^f.*'));
-V.addKeypress('findF', finderFactory('^F.*'));
 
 V.addKeyup('blur', {
     fns: {
@@ -779,14 +790,14 @@ V.addKeyup('blur', {
                 }
             }
 
-            BlurContainer.execute();
+            // BlurContainer.execute();
 
             return true;
         }
     }
 });
 
-V.addKeypress('help', function() {
+(function() {
     var addListener = function() {
         if (document.addEventListener) {
             return function(node, type, fn) {
@@ -816,15 +827,12 @@ V.addKeypress('help', function() {
         }
     }
 
-    return {
+    V.addKeypress('help', {
         pattern: {
             value: '?'
         },
         fns: {
             filter: filterByTarget,
-            setup: function() {
-                hideHelp();
-            },
             execute: function() {
                 var doc = document,
                     HELP_VIEW = CONSTANTS.HELP_VIEW,
@@ -846,7 +854,7 @@ V.addKeypress('help', function() {
                     bindHelpCloseBtn();
                 }
 
-                BlurContainer.add(hideHelp);
+                // BlurContainer.add(hideHelp);
 
                 // 调整位置
                 var WIDTH  = HELP_VIEW.WIDTH,
@@ -854,10 +862,23 @@ V.addKeypress('help', function() {
                 left = (DOM.getViewWidth() - WIDTH) / 2;
                 top  = DOM.getDocScrollTop() + 200;
                 helpContainer.style.cssText = 'display:block;position:absolute;top:'+top+'px;left:'+left+'px;z-index:99999;width:'+WIDTH+'px;';
+
+                return true;
             }
         }
-    }
-});
+    });
+    V.addKeyup('helpCleaner', {
+        fns: {
+            filter: function (c, s, keyStroke) {
+                return keyStroke.isEscape();
+            },
+            execute: function() {
+                hideHelp();
+                return true;
+            }
+        }
+    });
+})();
 
 function bindKeypress() {
     S.bindEvents(['keypress']);

@@ -30,7 +30,7 @@ function logger() {
     }
 
     var args = Array.prototype.slice.call(arguments);
-    args.unshift(+new Date + ':');
+    // args.unshift(+new Date + ':');
 
     var log = window.console && console.log;
     if (log) {
@@ -242,9 +242,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   },
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     setup: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     clean: function(currentKeyStroke, keyStrokes, keyStroke) {}
      *   }
      * }
      */
@@ -285,6 +283,7 @@ Router.prototype = new Proto(Router, {
         }
         var actions = this.actionContainer.getActions(type);
         actions = this.filterActions(actions, keyStroke);
+        logger('[Router::handle], matched actioins: ', actions);
         this.execute(actions, keyStroke);
     },
 
@@ -338,49 +337,28 @@ Router.prototype = new Proto(Router, {
         var currentKeyStroke = keyStroke.getKeyStroke(),
             keyStrokes = this.keyStrokes;
 
-        if (actions.length === 1) {
-            var fns = actions[0].fns,
+        var len = actions.length;
+        if (len > 0) {
+            var i = 0,
+                fns,
+                execute,
+                allFinished = true,
+                ret;
+            for (; i < len; ++i) {
+                fns = actions[i].fns;
                 execute = fns.execute;
 
-            this.setCleanFunc(fns.clean);
+                logger('[Router::execute], ',this,currentKeyStroke, keyStrokes, keyStroke);
+                ret = execute(currentKeyStroke, keyStrokes, keyStroke);
+                allFinished = ret && allFinished;
+            }
 
-            this.runSetup(currentKeyStroke, keyStrokes, keyStroke);
-            var ret = execute(currentKeyStroke, keyStrokes, keyStroke);
-
-            this.setSetupFunc(fns.setup);
-
-            if (ret) {
+            if (allFinished) {
                 this.clearKeyStrokes();
             }
-        } else if (actions.length === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress‘ 是为了防止 keyup 中 清空 this.keyStrokes 属性
-            this.runSetup(currentKeyStroke, keyStrokes, keyStroke);
-            this.runClean(currentKeyStroke, keyStrokes, keyStroke);
+        } else if (len === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress' 是为了防止 keyup 中 清空 this.keyStrokes 属性
             this.clearKeyStrokes();
         }
-    },
-
-    setSetupFunc: function(fn) {
-        if (typeof fn === 'function') {
-            this.setupFn = fn;
-        }
-    },
-
-    setCleanFunc: function(fn) {
-        if (typeof fn === 'function') {
-            this.cleanFn = fn;
-        }
-    },
-
-    runSetup: function(currentKeyStroke, keyStrokes, keyStroke) {
-        var setup = this.setupFn;
-        setup && setup(currentKeyStroke, keyStrokes, keyStroke);
-        this.setupFn = null;
-    },
-
-    runClean: function(currentKeyStroke, keyStrokes, keyStroke) {
-        var clean = this.cleanFn;
-        clean && clean(currentKeyStroke, keyStrokes, keyStroke);
-        this.cleanFn = null;
     },
 
     clearKeyStrokes: function () {
@@ -1102,7 +1080,7 @@ V.addKeypress('goInsert', {
     }
 });
 
-var finderFactory = (function() {
+(function() {
     var tagContainer,
         findedLinkTagPair;
 
@@ -1208,7 +1186,7 @@ var finderFactory = (function() {
             links = tagEachLink(links, tagContainer);
             findedLinkTagPair = links;
 
-            BlurContainer.add(clean);
+            // BlurContainer.add(clean);
 
             if (links.length == 0) {
                 return true;
@@ -1248,22 +1226,33 @@ var finderFactory = (function() {
         return true;
     }
 
-    return  function (pattern) {
+    var finderFactory = function(pattern) {
         return {
+            type: pattern,
             pattern: {
                 isRegExp: true,
                 value: pattern
             },
             fns: {
                 filter: filterByTarget,
-                execute: execute,
-                clean: clean
+                execute: execute
             }
         };
-    }
+    };
+    V.addKeypress('findf', finderFactory('^f.*'));
+    V.addKeypress('findF', finderFactory('^F.*'));
+    V.addKeyup('findCleaner', {
+        fns: {
+            filter: function (c, s, keyStroke) {
+                return keyStroke.isEscape();
+            },
+            execute: function() {
+                clean();
+                return true;
+            }
+        }
+    });
 })();
-V.addKeypress('findf', finderFactory('^f.*'));
-V.addKeypress('findF', finderFactory('^F.*'));
 
 V.addKeyup('blur', {
     fns: {
@@ -1288,14 +1277,14 @@ V.addKeyup('blur', {
                 }
             }
 
-            BlurContainer.execute();
+            // BlurContainer.execute();
 
             return true;
         }
     }
 });
 
-V.addKeypress('help', function() {
+(function() {
     var addListener = function() {
         if (document.addEventListener) {
             return function(node, type, fn) {
@@ -1325,15 +1314,12 @@ V.addKeypress('help', function() {
         }
     }
 
-    return {
+    V.addKeypress('help', {
         pattern: {
             value: '?'
         },
         fns: {
             filter: filterByTarget,
-            setup: function() {
-                hideHelp();
-            },
             execute: function() {
                 var doc = document,
                     HELP_VIEW = CONSTANTS.HELP_VIEW,
@@ -1355,7 +1341,7 @@ V.addKeypress('help', function() {
                     bindHelpCloseBtn();
                 }
 
-                BlurContainer.add(hideHelp);
+                // BlurContainer.add(hideHelp);
 
                 // 调整位置
                 var WIDTH  = HELP_VIEW.WIDTH,
@@ -1363,10 +1349,23 @@ V.addKeypress('help', function() {
                 left = (DOM.getViewWidth() - WIDTH) / 2;
                 top  = DOM.getDocScrollTop() + 200;
                 helpContainer.style.cssText = 'display:block;position:absolute;top:'+top+'px;left:'+left+'px;z-index:99999;width:'+WIDTH+'px;';
+
+                return true;
             }
         }
-    }
-});
+    });
+    V.addKeyup('helpCleaner', {
+        fns: {
+            filter: function (c, s, keyStroke) {
+                return keyStroke.isEscape();
+            },
+            execute: function() {
+                hideHelp();
+                return true;
+            }
+        }
+    });
+})();
 
 function bindKeypress() {
     S.bindEvents(['keypress']);
