@@ -885,76 +885,64 @@ var CONSTANTS = {
     HELP_VIEW: {
         STYLE_ID: 'vimlike:helpStyleId',
         HTML_ID: 'vimlike:helpHtmlId',
-        STYLE: '\
-                .vim-bml-wrapper{width:100%;height:100%;overflow:hidden;border-radius:8px;background-color:#333;opacity:0.85;filter:alpha(opacity=85);}\
-                .vim-bml-wrapper td,.vim-bml-wrapper th{background:transparent;color:#fff;font-family:arial,sans-serif;}\
-                .vim-bml-area{margin:10px;}\
-                .vim-bml-area td{vertical-align:top;}\
-                .vim-bml-hd{width:100%;height:24px;border-bottom:1px solid #999;font-weight:bold;}\
-                .vim-bml-lt{text-align:left;font-size:16px;}\
-                .vim-bml-rt{text-align:right;cursor:pointer;text-decoration:underline;}\
-                .vim-bml-btn{color:#dd0;}\
-                .vim-bml-bd{border-collapse:collapse;width:100%;margin-top:3px;border-bottom:1px solid #999;font-size:13px;}\
-                .vim-bml-help td{text-align:left;}\
-                .vim-bml-key{text-align:right !important;font-weight:bold;padding-right:3px;}\
-                .vim-bml-action{text-align:left;}\
-                .vim-bml-help{border-collapse:collapse;}\
-                .vim-bml-help th{color:#dd0;font-weight:bold;}\
-                .vim-bml-help span{padding-right:3px;color:#dd0;font-family:"courier new",monospace;}\
-                .vim-bml-ft{width:100%;margin-top:3px;font-size:12px;}\
-                .vim-bml-ft-lt{text-align:left;}\
-                .vim-bml-ft-lt a{color:#f60;}\
-                .vim-bml-ft-rt{text-align:right;}',
-        HTML: '\
-                <div class="vim-bml-wrapper">\
-                    <div class="vim-bml-area">\
-                        <table class="vim-bml-hd">\
-                            <tr>\
-                                <td class="vim-bml-lt">Vim-like bookmarklet Help</td>\
-                                <td class="vim-bml-rt" title="Click or Press Enter to hide Help"><span class="vim-bml-btn" id="vimlike:bookmarlet:closeBtn">close</span></td>\
-                            </tr>\
-                        </table>\
-                        <table class="vim-bml-bd">\
-                            <tr>\
-                                <td>\
-                                    <table class="vim-bml-help">\
-                                        <tr><th></th><th>Supported</th></tr>\
-                                        <tr><td class="vim-bml-key"><span>j</span>:</td><td>Scroll Down</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>k</span>:</td><td>Scroll Up</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>gg</span>:</td><td>Go to Top</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>G</span>:</td><td>Go to Bottom</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>g(\\d*)i</span>:</td><td>Focus Input</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>f</span>:</td><td>Click Link</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>F</span>:</td><td>Click Link in New Window</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Esc</span>:</td><td>Blur Input</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>?</span>:</td><td>Show This Help</td></tr>\
-                                    </table>\
-                                </td>\
-                                <td>\
-                                    <table class="vim-bml-help">\
-                                        <tr><th></th><th>Native</th></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + f</span>:</td><td>Search</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + r</span>:</td><td>Refresh</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + w</span>:</td><td>Close the Current Window</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + l</span>:</td><td>Open URL in Current Window</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + h</span>:</td><td>View the History</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + -></span>:</td><td>History Forward</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + <-</span>:</td><td>History Back</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + Tab</span>:</td><td>Switches to the next tab.</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Ctrl + Shift + Tab</span>:</td><td>Switches to the previous tab</td></tr>\
-                                        <tr><td class="vim-bml-key"><span>Alt + Home</span>:</td><td>Go to Home Page</td></tr>\
-                                    </table>\
-                                </td>\
-                            </tr>\
-                        </table>\
-                        <table class="vim-bml-ft">\
-                            <tr>\
-                                <td class="vim-bml-ft-lt"><a href="mailto:myhere.2009@gmail.com">Feedback</a></td>\
-                                <td class="vim-bml-ft-rt">Version: 0.1.0</td>\
-                            </tr>\
-                        </table>\
-                    </div>\
-                </div>',
+        STYLE: ''+
+'vim010wrapper{display:block;border-radius:8px;width:100%;height:100%;background-color:#333;overflow:hidden;opacity:0.85;filter:alpha(opacity=85);}'+
+'vim010main{display:block;margin:20px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}'+
+'vim010hd{display:block;border-bottom:1px solid #999;width:100%;height:20px;font-weight:bold;}'+
+'vim010hd-lt{float:left;font-size:16px;}'+
+'vim010hd-rt{float:right;color:#dd0;text-decoration:underline;}'+
+'vim010bd{display:block;margin-top:10px;border-bottom:1px solid #999;width:100%;overflow:hidden;zoom:1;}'+
+'vim010bd-row-lt{float:left;width:40%;}'+
+'vim010bd-row-rt{float:left;width:60%;-width:50%;}'+
+'vim010row-hd{display:block;margin-bottom:5px;width:100%;text-align:center;color: #DD0;font-weight: bold;font-size:14px;}'+
+'vim010colon{color:#fff;}'+
+'vim010-col-lt, vim010-col-rt{float:left;height:20px;line-height:20px;}'+
+'vim010-col-lt{width:35%;text-align:right;color:#DD0;font-family: "courier new",monospace;font-weight:bold;}'+
+'vim010-col-rt{width:65%;text-align:left;text-indent:3px;font-family:arial,sans-serif;}'+
+'vim010ft{display:block;margin-top:6px;overflow:hidden;zoom:1;}'+
+'vim010-fb{color:#f60;text-decoration:underline;}'+
+'vim010ft-lt{float:left;}'+
+'vim010ft-rt{float:right;}',
+        HTML: ''+
+'<vim010wrapper>'+
+    '<vim010main>'+
+        '<vim010hd>'+
+            '<vim010hd-lt>Vim-like Shortcut Help</vim010hd-lt>'+
+            '<vim010hd-rt><vim010-btn title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
+        '</vim010hd>'+
+        '<vim010bd>'+
+            '<vim010bd-row-lt>'+
+                '<vim010row-hd>Supported</vim010row-hd>'+
+                '<vim010-col-lt>j<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Down</vim010-col-rt>'+
+                '<vim010-col-lt>k<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Up</vim010-col-rt>'+
+                '<vim010-col-lt>gg<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Top</vim010-col-rt>'+
+                '<vim010-col-lt>G<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Bottom</vim010-col-rt>'+
+                '<vim010-col-lt>gi<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Focus Input</vim010-col-rt>'+
+                '<vim010-col-lt>f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link</vim010-col-rt>'+
+                '<vim010-col-lt>F<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link in New Window</vim010-col-rt>'+
+                '<vim010-col-lt>Esc<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Blur Input</vim010-col-rt>'+
+                '<vim010-col-lt>?<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Show This Help</vim010-col-rt>'+
+            '</vim010bd-row-lt>'+
+            '<vim010bd-row-rt>'+
+                '<vim010row-hd>Native</vim010row-hd>'+
+                '<vim010-col-lt>Ctrl + f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Search</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + r<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Refresh</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + w<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Close Current Window</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + l<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open Url in Current Window</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + h<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>View the History</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + -><vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Forward</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + <-<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Back</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Next Tab</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl +Shift+Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Previous Tab</vim010-col-rt>'+
+                '<vim010-col-lt>Alt + Home<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Go to Home Page</vim010-col-rt>'+
+            '</vim010bd-row-rt>'+
+        '</vim010bd>'+
+        '<vim010ft>'+
+            '<vim010ft-lt><vim010-fb title="myhere.2009@gmail.com">Feedback</vim010-fb> | <vim010-fb title="follow me on github" data-url="https://github.com/myhere">GitHub</vim010-fb></vim010ft-lt>'+
+            '<vim010ft-rt>Version:0.1.0</vim010ft-rt>'+
+        '</vim010ft>'+
+    '</vim010main>'+
+'</vim010wrapper>',
         WIDTH: 800
     }
 };
@@ -1325,6 +1313,20 @@ V.addKeyup('blur', {
                     helpContainer = doc.getElementById(HELP_VIEW.HTML_ID);
 
                 if (!helpContainer) { // 不存在
+                    // ie6/7 htmlshiv fix custom tag
+                    (function() {
+                        var ua = window.navigator.userAgent.toLowerCase(),
+                        matches = ua.match(/msie ([\w.]+)/);
+                        if (matches && matches[1] && parseInt(matches[1], 10) < 9) {
+                            logger.log('stupid ie, htmlshiv to fix custom tag!');
+                            var tag,
+                                tags = 'vim010wrapper vim010hd vim010main vim010hd-lt vim010hd-rt vim010bd vim010-row-rt vim010colon vim010bd-row-lt vim010bd-row-rt vim010-row-hd vim010-col-lt vim010-col-rt vim010row-hd vim010ft vim010ft-lt vim010ft-rt vim010ft-fb vim010ft-rt'.split(/\s+/);
+                            while (tag = tags.pop()) {
+                                document.createElement(tag);
+                            }
+                        }
+                    })();
+
                     // 添加 style
                     DOM.addStyleSheet(HELP_VIEW.STYLE, {
                         id: HELP_VIEW.STYLE_ID
@@ -1332,7 +1334,10 @@ V.addKeyup('blur', {
 
                     helpContainer = doc.createElement('div');
                     helpContainer.id = HELP_VIEW.HTML_ID;
-                    helpContainer.innerHTML = HELP_VIEW.HTML;
+                    // ie 下直接设置 innerHTML 不会有样式
+                    setTimeout(function() {
+                        helpContainer.innerHTML = HELP_VIEW.HTML;
+                    }, 10);
 
                     document.body.appendChild(helpContainer);
 
@@ -1359,7 +1364,9 @@ V.addKeyup('blur', {
             filter: function (c, s, keyStroke) {
                 return keyStroke.isEscape();
             },
-            execute: function() {
+            execute: function(c,s, keyStroke) {
+                var evt = keyStroke.getEvent();
+                evt.preventDefault();
                 hideHelp();
                 return true;
             }
@@ -1380,8 +1387,3 @@ function init() {
 
 init();
 })(this.shortcuts);
-
-/**
- * TODO:
- * 给各种 type 的 V.addActions 增加门面函数
- */

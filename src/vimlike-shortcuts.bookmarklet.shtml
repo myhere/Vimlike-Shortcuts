@@ -5,7 +5,7 @@
 </head> 
 <body> 
     <p><a href="javascript:(function(v){ !!v ? v.toggle() : (function(d, s) { s = document.createElement('script'); s.charset = 'utf-8'; s.src = 'http://localhost/dev/Vimlike-Shortcuts/build/vimlike-shortcuts.js?t=' + (+new Date); d.getElementsByTagName('head')[0].appendChild(s); })(document); })(window.shortcuts);;">将我拖动到书签栏</a><p> 
-<script> 
+<script type="text/html"> 
 (function(v){
     !!v ? v.toggle() : (function(d, s) {
         s = document.createElement('script');
@@ -27,65 +27,98 @@
     }
 })();
 </script>
+
+<script>
+function addStyleSheet(clsText, attrs) {
+        var doc   = document,
+            style = doc.createElement('style');
+
+        style.type = 'text/css';
+        if (style.styleSheet) {
+            style.styleSheet.cssText = clsText;
+        } else {
+            var rules = doc.createTextNode(clsText);
+            style.appendChild(rules);
+        }
+
+        for (var p in attrs) {
+            if (attrs.hasOwnProperty(p)) {
+                style.setAttribute(p, attrs[p]);
+            }
+        }
+
+        doc.body.appendChild(style);
+}
+
+var s = ''+
+'vim010wrapper{display:block;border-radius:8px;width:100%;height:100%;background-color:#333;overflow:hidden;opacity:0.85;filter:alpha(opacity=85);}'+
+'vim010main{display:block;margin:20px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}'+
+'vim010hd{display:block;border-bottom:1px solid #999;width:100%;height:20px;font-weight:bold;}'+
+'vim010hd-lt{float:left;font-size:16px;}'+
+'vim010hd-rt{float:right;color:#dd0;text-decoration:underline;}'+
+'vim010bd{display:block;margin-top:10px;border-bottom:1px solid #999;width:100%;overflow:hidden;zoom:1;}'+
+'vim010bd-row-lt{float:left;width:40%;}'+
+'vim010bd-row-rt{float:left;width:60%;-width:50%;}'+
+'vim010row-hd{display:block;margin-bottom:5px;width:100%;text-align:center;color: #DD0;font-weight: bold;font-size:14px;}'+
+'vim010colon{color:#fff;}'+
+'vim010-col-lt, vim010-col-rt{float:left;height:20px;line-height:20px;}'+
+'vim010-col-lt{width:35%;text-align:right;color:#DD0;font-family: "courier new",monospace;font-weight:bold;}'+
+'vim010-col-rt{width:65%;text-align:left;text-indent:3px;font-family:arial,sans-serif;}'+
+'vim010ft{display:block;margin-top:6px;overflow:hidden;zoom:1;}'+
+'vim010-fb{color:#f60;text-decoration:underline;}'+
+'vim010ft-lt{float:left;}'+
+'vim010ft-rt{float:right;}';
+
+addStyleSheet(s);
+</script>
 <style>
 .wrapper{display:block;margin:0 auto;width:800px;}
-vim010wrapper{border-radius:8px;width:100%;height:100%;background-color:#333;overflow:hidden;opacity:0.85;filter:alpha(opacity=85);}
-vim010main{display:block;margin:20px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}
-vim010hd{display:block;border-bottom:1px solid #999;width:100%;height:20px;font-weight:bold;}
-vim010hd-lt{float:left;font-size:16px;}
-vim010hd-rt{float:right;color:#dd0;text-decoration:underline;}
-vim010bd{display:block;margin-top:10px;border-bottom:1px solid #999;width:100%;overflow:hidden;zoom:1;}
-vim010bd-row-lt{float:left;width:40%;}
-vim010bd-row-rt{float:left;width:60%;-width:50%;}
-vim010row-hd{display:block;margin-bottom:5px;width:100%;text-align:center;color: #DD0;font-weight: bold;font-size:14px;}
-vim010colon{color:#fff;}
-vim010-col-lt, vim010-col-rt{float:left;height:20px;line-height:20px;}
-vim010-col-lt{width:35%;text-align:right;color:#DD0;font-family: "courier new",monospace;font-weight:bold;}
-vim010-col-rt{width:65%;text-align:left;text-indent:3px;font-family:arial,sans-serif;}
-vim010ft{display:block;margin-top:6px;overflow:hidden;zoom:1;}
-vim010-fb{color:#f60;text-decoration:underline;}
-vim010ft-lt{float:left;}
-vim010ft-rt{float:right;}
 </style>
-<vim010wrapper class="wrapper">
-    <vim010main>
-        <vim010hd>
-            <vim010hd-lt>Vim-like Shortcut Help</vim010hd-lt>
-            <vim010hd-rt><vim010-btn title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>
-        </vim010hd>
+<div class="wrapper" id="help:container"></div>
 
-        <vim010bd>
-            <vim010bd-row-lt>
-                <vim010row-hd>Supported</vim010row-hd>
-                <vim010-col-lt>j<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Down</vim010-col-rt>
-                <vim010-col-lt>k<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Up</vim010-col-rt>
-                <vim010-col-lt>gg<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Top</vim010-col-rt>
-                <vim010-col-lt>G<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Bottom</vim010-col-rt>
-                <vim010-col-lt>gi<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Focus Input</vim010-col-rt>
-                <vim010-col-lt>f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link</vim010-col-rt>
-                <vim010-col-lt>F<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link in New Window</vim010-col-rt>
-                <vim010-col-lt>Esc<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Blur Input</vim010-col-rt>
-                <vim010-col-lt>?<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Show This Help</vim010-col-rt>
-            </vim010bd-row-lt>
-            <vim010bd-row-rt>
-                <vim010row-hd>Native</vim010row-hd>
-                <vim010-col-lt>Ctrl + f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Search</vim010-col-rt>
-                <vim010-col-lt>Ctrl + r<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Refresh</vim010-col-rt>
-                <vim010-col-lt>Ctrl + w<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Close Current Window</vim010-col-rt>
-                <vim010-col-lt>Ctrl + l<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open Url in Current Window</vim010-col-rt>
-                <vim010-col-lt>Ctrl + h<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>View the History</vim010-col-rt>
-                <vim010-col-lt>Ctrl + -><vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Forward</vim010-col-rt>
-                <vim010-col-lt>Ctrl + <-<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Back</vim010-col-rt>
-                <vim010-col-lt>Ctrl + Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Next Tab</vim010-col-rt>
-                <vim010-col-lt>Ctrl +Shift+Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Previous Tab</vim010-col-rt>
-                <vim010-col-lt>Alt + Home<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Go to Home Page</vim010-col-rt>
-            </vim010bd-row-rt>
-        </vim010bd>
-        <vim010ft>
-            <vim010ft-lt><vim010-fb title="myhere.2009@gmail.com">Feedback</vim010-fb> | <vim010-fb title="follow me on github" data-url="https://github.com/myhere">GitHub</vim010-fb></vim010ft-lt>
-            <vim010ft-rt>Version:0.1.0</vim010ft-rt>
-        </vim010ft>
-    </vim010main>
-</vim010wrapper>
+<script>
+    var h = '' +
+'<vim010wrapper>'+
+    '<vim010main>'+
+        '<vim010hd>'+
+            '<vim010hd-lt>Vim-like Shortcut Help</vim010hd-lt>'+
+            '<vim010hd-rt><vim010-btn title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
+        '</vim010hd>'+
+        '<vim010bd>'+
+            '<vim010bd-row-lt>'+
+                '<vim010row-hd>Supported</vim010row-hd>'+
+                '<vim010-col-lt>j<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Down</vim010-col-rt>'+
+                '<vim010-col-lt>k<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Up</vim010-col-rt>'+
+                '<vim010-col-lt>gg<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Top</vim010-col-rt>'+
+                '<vim010-col-lt>G<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Bottom</vim010-col-rt>'+
+                '<vim010-col-lt>gi<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Focus Input</vim010-col-rt>'+
+                '<vim010-col-lt>f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link</vim010-col-rt>'+
+                '<vim010-col-lt>F<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link in New Window</vim010-col-rt>'+
+                '<vim010-col-lt>Esc<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Blur Input</vim010-col-rt>'+
+                '<vim010-col-lt>?<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Show This Help</vim010-col-rt>'+
+            '</vim010bd-row-lt>'+
+            '<vim010bd-row-rt>'+
+                '<vim010row-hd>Native</vim010row-hd>'+
+                '<vim010-col-lt>Ctrl + f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Search</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + r<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Refresh</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + w<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Close Current Window</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + l<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open Url in Current Window</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + h<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>View the History</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + -><vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Forward</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + <-<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Back</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Next Tab</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl +Shift+Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Previous Tab</vim010-col-rt>'+
+                '<vim010-col-lt>Alt + Home<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Go to Home Page</vim010-col-rt>'+
+            '</vim010bd-row-rt>'+
+        '</vim010bd>'+
+        '<vim010ft>'+
+            '<vim010ft-lt><vim010-fb title="myhere.2009@gmail.com">Feedback</vim010-fb> | <vim010-fb title="follow me on github" data-url="https://github.com/myhere">GitHub</vim010-fb></vim010ft-lt>'+
+            '<vim010ft-rt>Version:0.1.0</vim010ft-rt>'+
+        '</vim010ft>'+
+    '</vim010main>'+
+'</vim010wrapper>';
+
+document.getElementById('help:container').innerHTML =h;
+</script>
 </body> 
 </html> 
