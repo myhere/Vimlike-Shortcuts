@@ -243,6 +243,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
+     *     clean: function(currentKeyStroke, keyStrokes, keyStroke)
      *   }
      * }
      */
@@ -310,10 +311,14 @@ Router.prototype = new Proto(Router, {
                     value = new RegExp(value);
                     if (value.test(keyStrokes)) {
                         customFilter(action);
+                    } else {
+                        executeClean(action);
                     }
                 } else { 
                     if (value.indexOf(keyStrokes) === 0) {
                         customFilter(action);
+                    } else {
+                        executeClean(action);
                     }
                 }
             } else {
@@ -323,12 +328,24 @@ Router.prototype = new Proto(Router, {
 
         function customFilter(action) {
             var fn = action.fns && action.fns.filter;
+            var clean = action.fns && action.fns.clean;
             if (typeof fn === 'function') {
                 if (fn(currentKeyStroke, keyStrokes, keyStroke)) {
                     results.push(action);
+                } { // 执行不符合按键的 action 的 clean 函数
+                    executeClean(action)
                 }
             } else {
                 results.push(action);
+            }
+        }
+
+        // 执行被过滤掉的 clean 函数
+        function executeClean(action) {
+            var clean = action.fns && action.fns.clean;
+
+            if (typeof clean === 'function') {
+                clean(currentKeyStroke, keyStrokes, keyStroke);
             }
         }
     },
@@ -509,6 +526,12 @@ S.addActions(
                         document.body.appendChild(div_ele);
                         return true;
                     }
+                },
+                clean: function() {
+                    var e1 = document.getElementById('sc:test:zhang');
+                    if (e1) {
+                        document.body.removeChild(e1);
+                    }
                 }
             }
         },
@@ -528,7 +551,13 @@ S.addActions(
                         document.body.appendChild(div_ele);
                         return true;
                     }
-                }
+                },
+                clean: function() {
+                    var e1 = document.getElementById('sc:test:zhanglin1');
+                    if (e1) {
+                        document.body.removeChild(e1);
+                    }
+               }
             }
         },
         {
@@ -547,7 +576,13 @@ S.addActions(
                         document.body.appendChild(div_ele);
                         return true;
                     }
-                }
+                },
+                clean: function() {
+                    var e1 = document.getElementById('sc:test:zhanglin2');
+                    if (e1) {
+                        document.body.removeChild(e1);
+                    }
+               }
             }
         },
         {
@@ -557,12 +592,12 @@ S.addActions(
                     return keyStroke.isEscape();
                 },
                 execute: function() {
-                    var e1 = document.getElementById('sc:test:zhang'),
-                        e2 = document.getElementById('sc:test:zhanglin1'),
+                    //var e1 = document.getElementById('sc:test:zhang'),
+                    var e2 = document.getElementById('sc:test:zhanglin1'),
                         e3 = document.getElementById('sc:test:zhanglin2');
 
                     try {
-                        document.body.removeChild(e1);
+                        // document.body.removeChild(e1);
                         document.body.removeChild(e2);
                         document.body.removeChild(e3);
                     } catch(e) {}
