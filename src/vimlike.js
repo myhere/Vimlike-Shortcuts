@@ -645,7 +645,7 @@ V.addKeypress('goInsert', {
         }
     }
 
-    function clean() {
+    function clear() {
         try {
             document.body.removeChild(tagContainer);
         } catch (e) {}
@@ -697,7 +697,7 @@ V.addKeypress('goInsert', {
 
             click(links[0][1], keyStrokes.charAt(0) === 'F');
 
-            clean();
+            clear();
         }
 
         return true;
@@ -718,13 +718,13 @@ V.addKeypress('goInsert', {
     };
     V.addKeypress('findf', finderFactory('^f.*'));
     V.addKeypress('findF', finderFactory('^F.*'));
-    V.addKeyup('findCleaner', {
+    V.addKeyup('clearFind', {
         fns: {
             filter: function (c, s, keyStroke) {
                 return keyStroke.isEscape();
             },
             execute: function() {
-                clean();
+                clear();
                 return true;
             }
         }
@@ -840,12 +840,12 @@ V.addKeyup('blur', {
 
                 return true;
             },
-            clean: function() {
+            clear: function() {
                 hideHelp();
             }
         }
     });
-    V.addKeyup('helpCleaner', {
+    V.addKeyup('clearHelp', {
         fns: {
             filter: function (c, s, keyStroke) {
                 return keyStroke.isEscape();
