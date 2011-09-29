@@ -3,7 +3,7 @@
  *
  * NOTE:
  *   - 在 keypress 中绑定可见按键的事件
- *   - 在 keyup 中绑定不可见按键的事件
+ *   - 在 keyup/keydown 中绑定不可见按键的事件, keyup/keydown 添加的 action 的 pattern 不会生效，通过 filter 过滤
  * 
  * Helpers:
  *   logger
@@ -86,7 +86,7 @@ function Proto(__constructor, proto) {
         throw new TypeError('Argument "__constructor" of "Proto" need to be an instance of a "Function"!');
     }
     if (!(proto && (proto instanceof Object))) {
-        return;
+        return __constructor.prototype;
     }
 
     this.constructor = __constructor;
@@ -185,9 +185,16 @@ KeyStroke.prototype = new Proto(KeyStroke, {
     isValidKeyStroke: function() {
         var INVALID_TARGETS = ['input', 'textarea'];
 
-        var tagName = this.event.target.tagName.toLowerCase();
+        var target = this.event.target;
+
+        var tagName = target.tagName.toLowerCase();
 
         if (utils.in_array(tagName, INVALID_TARGETS)) {
+            return false;
+        }
+
+        // contenteditable
+        if (target.getAttribute('contenteditable')) {
             return false;
         }
 
@@ -243,7 +250,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     clean: function(currentKeyStroke, keyStrokes, keyStroke)
+     *     clear: function(currentKeyStroke, keyStrokes, keyStroke)
      *   }
      * }
      */
@@ -275,21 +282,35 @@ function Router(actionContainer) {
     this.actionContainer = actionContainer;
 
     this.keyStrokes = '';
+    this.prevKeypressActions = null;
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
-        var type = keyStroke.getEventType();
         // 只在 keypress 中获取字符
         if (keyStroke.isKeypress()) {
             this.keyStrokes += keyStroke.getKeyStroke();
+            this.handleKeypress(keyStroke);
+        } else {
+            this.handleKeyHit(keyStroke);
         }
-        var actions = this.actionContainer.getActions(type);
-        actions = this.filterActions(actions, keyStroke);
-        logger('[Router::handle], matched actioins: ', actions);
+    },
+
+    handleKeypress: function(keyStroke) {
+        var actions = this.getPrevKeypressActions();
+        actions = this.filterKeypresActions(actions, keyStroke);
+        this.setPrevKeypressActions(actions);
+
         this.execute(actions, keyStroke);
     },
 
-    filterActions: function (actions, keyStroke) { // utils.filter
+    handleKeyHit: function(keyStroke) {
+        var actions = this.actionContainer.getActions(keyStroke.getEventType());
+        actions = this.filterKeyHitActions(actions, keyStroke);
+
+        this.execute(actions, keyStroke);
+    },
+
+    filterKeypresActions: function(actions, keyStroke) {
         var results = [],
             currentKeyStroke = keyStroke.getKeyStroke(),
             keyStrokes = this.keyStrokes;
@@ -329,11 +350,10 @@ Router.prototype = new Proto(Router, {
 
         function customFilter(action) {
             var fn = action.fns && action.fns.filter;
-            var clean = action.fns && action.fns.clean;
             if (typeof fn === 'function') {
                 if (fn(currentKeyStroke, keyStrokes, keyStroke)) {
                     results.push(action);
-                } { // 执行不符合按键的 action 的 clean 函数
+                } { // 执行不符合按键的 action 的 clear 函数
                     executeClean(action)
                 }
             } else {
@@ -341,14 +361,34 @@ Router.prototype = new Proto(Router, {
             }
         }
 
-        // 执行被过滤掉的 clean 函数
+        // 执行被过滤掉的 clear 函数
         function executeClean(action) {
-            var clean = action.fns && action.fns.clean;
+            var clear = action.fns && action.fns.clear;
 
-            if (typeof clean === 'function') {
-                clean(currentKeyStroke, keyStrokes, keyStroke);
+            if (typeof clear === 'function') {
+                clear(currentKeyStroke, keyStrokes, keyStroke);
             }
         }
+    },
+
+    filterKeyHitActions: function(actions, keyStroke) {
+        var i = 0,
+            len = actions.length,
+            action,
+            filter,
+            results = [],
+            currentKeyStroke = keyStroke.getKeyStroke(),
+            keyStrokes = this.keyStrokes;
+
+        for (; i < len; ++i) {
+            action = actions[i];
+            filter = action.fns && action.fns.filter;
+            if (typeof filter === 'function' && filter(currentKeyStroke, keyStrokes, keyStroke)) {
+                results.push(action);
+            }
+        }
+
+        return results;
     },
 
     execute: function (actions, keyStroke) {
@@ -373,10 +413,30 @@ Router.prototype = new Proto(Router, {
 
             if (allFinished) {
                 this.clearKeyStrokes();
+                this.clearPrevKeypressActions();
             }
-        } else if (len === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress' 是为了防止 keyup 中 清空 this.keyStrokes 属性
+        } else if (keyStroke.isKeypress()) { // 防止 keydown/keyup 中清空
             this.clearKeyStrokes();
+            this.clearPrevKeypressActions();
         }
+    },
+
+    getPrevKeypressActions: function() {
+        return this.prevKeypressActions == null ?
+                    this.actionContainer.getActions('keypress') :
+                    this.prevKeypressActions;
+    },
+
+    setPrevKeypressActions: function(actions) {
+        if (actions.length > 0) {
+            this.prevKeypressActions = actions;
+        } else {
+            this.clearPrevKeypressActions();
+        }
+    },
+
+    clearPrevKeypressActions: function() {
+        this.prevKeypressActions = null;
     },
 
     clearKeyStrokes: function () {
@@ -1157,7 +1217,7 @@ V.addKeypress('goInsert', {
         }
     }
 
-    function clean() {
+    function clear() {
         try {
             document.body.removeChild(tagContainer);
         } catch (e) {}
@@ -1209,7 +1269,7 @@ V.addKeypress('goInsert', {
 
             click(links[0][1], keyStrokes.charAt(0) === 'F');
 
-            clean();
+            clear();
         }
 
         return true;
@@ -1230,13 +1290,13 @@ V.addKeypress('goInsert', {
     };
     V.addKeypress('findf', finderFactory('^f.*'));
     V.addKeypress('findF', finderFactory('^F.*'));
-    V.addKeyup('findCleaner', {
+    V.addKeyup('clearFind', {
         fns: {
             filter: function (c, s, keyStroke) {
                 return keyStroke.isEscape();
             },
             execute: function() {
-                clean();
+                clear();
                 return true;
             }
         }
@@ -1352,12 +1412,12 @@ V.addKeyup('blur', {
 
                 return true;
             },
-            clean: function() {
+            clear: function() {
                 hideHelp();
             }
         }
     });
-    V.addKeyup('helpCleaner', {
+    V.addKeyup('clearHelp', {
         fns: {
             filter: function (c, s, keyStroke) {
                 return keyStroke.isEscape();

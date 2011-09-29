@@ -86,7 +86,7 @@ function Proto(__constructor, proto) {
         throw new TypeError('Argument "__constructor" of "Proto" need to be an instance of a "Function"!');
     }
     if (!(proto && (proto instanceof Object))) {
-        return;
+        return __constructor.prototype;
     }
 
     this.constructor = __constructor;
@@ -185,9 +185,16 @@ KeyStroke.prototype = new Proto(KeyStroke, {
     isValidKeyStroke: function() {
         var INVALID_TARGETS = ['input', 'textarea'];
 
-        var tagName = this.event.target.tagName.toLowerCase();
+        var target = this.event.target;
+
+        var tagName = target.tagName.toLowerCase();
 
         if (utils.in_array(tagName, INVALID_TARGETS)) {
+            return false;
+        }
+
+        // contenteditable
+        if (target.getAttribute('contenteditable')) {
             return false;
         }
 
