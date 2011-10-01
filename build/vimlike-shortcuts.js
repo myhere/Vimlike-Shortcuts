@@ -1003,7 +1003,7 @@ var CONSTANTS = {
         '</vim010bd>'+
         '<vim010ft>'+
             '<vim010ft-lt><a href="mailto:myhere.2009@gmail.com">Feedback</a> | <a target="_blank" title="project hosting" href="https://github.com/myhere">GitHub</a> | <a href="http://twitter.com/#!/myhere_2009" target="_blank" title="follow me">Twitter</a></vim010ft-lt>'+
-            '<vim010ft-rt>Version:0.1.0</vim010ft-rt>'+
+            '<vim010ft-rt>Version:1.0.0</vim010ft-rt>'+
         '</vim010ft>'+
     '</vim010main>'+
 '</vim010wrapper>',
@@ -1449,8 +1449,9 @@ function unBindEvents() {
  
 function init() {
     V.init();
-
     bindEvents();
+    // TODO: 
+    // extractToWindow
 }
 
 init();
