@@ -14,7 +14,7 @@
 (function(S) {
 
 logger = S.logger;
-logger.LOG_LEVEL = '@debug@'; 
+// logger.LOG_LEVEL = '@debug@'; 
 // logger.on();
 
 var DOM = {
@@ -369,11 +369,14 @@ var CONSTANTS = {
         STYLE_ID: 'vimlike:helpStyleId',
         HTML_ID: 'vimlike:helpHtmlId',
         STYLE: ''+
+'vim010container{display:block;position:absolute;left:-1000px;z-index:99999;transition:left .4s ease-in-out;-moz-transition:left .4s ease-in-out;-webkit-transition:left .4s ease-in-out;}' +
 'vim010wrapper{display:block;border-radius:8px;width:100%;height:100%;background-color:#333;overflow:hidden;opacity:0.85;filter:alpha(opacity=85);}'+
 'vim010main{display:block;margin:15px 20px 10px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}'+
 'vim010hd{display:block;height:24px;font-weight:bold;}'+
 'vim010hd-lt{float:left;font-size:16px;}'+
-'vim010hd-rt{float:right;color:#dd0;text-decoration:underline;}'+
+'vim010hd-rt{float:right;}'+
+'vim010hd-lt vim010-btn{padding-left:10px;}' +
+'vim010-btn{cursor:pointer;color:#dd0;text-decoration:underline;font-size:12px;font-weight:normal;}' +
 'vim010bd{display:block;margin-top:2px;border-top:1px solid #999;width:100%;width:100%;padding-top:8px;overflow:hidden;zoom:1;}'+
 'vim010bd-row-lt{float:left;width:40%;}'+
 'vim010bd-row-rt{float:left;width:60%;-width:50%;}'+
@@ -383,15 +386,15 @@ var CONSTANTS = {
 'vim010-col-lt{width:35%;text-align:right;color:#DD0;font-family: "courier new",monospace;font-weight:bold;}'+
 'vim010-col-rt{width:65%;text-align:left;text-indent:3px;font-family:arial,sans-serif;}'+
 'vim010ft{display:block;margin-top:6px;border-top:1px solid #999;padding-top:8px;overflow:hidden;zoom:1;}'+
-'vim010-fb{color:#f60;text-decoration:underline;}'+
 'vim010ft-lt{float:left;}'+
+'vim010ft-lt a{font-size:12px;line-height:18px;color:#f60;background:none;text-decoration:underline}' +
 'vim010ft-rt{float:right;}',
         HTML: ''+
 '<vim010wrapper>'+
     '<vim010main>'+
         '<vim010hd>'+
-            '<vim010hd-lt>Vim-like Shortcut Help</vim010hd-lt>'+
-            '<vim010hd-rt><vim010-btn id="vimlike:bookmarlet:closeBtn" title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
+            '<vim010hd-lt>Vim-like Shortcut Help<vim010-btn id="vimlike:shortcuts:disableBtn" title="disable keyboard shortcuts">disable shortcuts</vim010-btn></vim010hd-lt>'+
+            '<vim010hd-rt><vim010-btn id="vimlike:shortcuts:closeBtn" title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
         '</vim010hd>'+
         '<vim010bd>'+
             '<vim010bd-row-lt>'+
@@ -421,7 +424,7 @@ var CONSTANTS = {
             '</vim010bd-row-rt>'+
         '</vim010bd>'+
         '<vim010ft>'+
-            '<vim010ft-lt><vim010-fb title="myhere.2009@gmail.com">Feedback</vim010-fb> | <vim010-fb title="follow me on github" data-url="https://github.com/myhere">GitHub</vim010-fb></vim010ft-lt>'+
+            '<vim010ft-lt><a href="mailto:myhere.2009@gmail.com">Feedback</a> | <a target="_blank" title="project hosting" href="https://github.com/myhere">GitHub</a> | <a href="http://twitter.com/#!/myhere_2009" target="_blank" title="follow me">Twitter</a></vim010ft-lt>'+
             '<vim010ft-rt>Version:0.1.0</vim010ft-rt>'+
         '</vim010ft>'+
     '</vim010main>'+
@@ -432,24 +435,6 @@ var CONSTANTS = {
 var filterByTarget = function(c, s, keyStroke) {
     return keyStroke.isValidKeyStroke();
 };
-
-/*
-V.addKeypress('sayHello', {
-    pattern: {
-        value: 'zhanglin'
-    },
-    fns: {
-        filter: filterByTarget,
-        execute: function(c, keyStrokes) {
-            if (keyStrokes == 'zhanglin') {
-                alert('hello, you just hit my name: "zhanglin"! sorry for this alert');
-
-                return true;
-            }
-        }
-    }
-});
-*/
 
 V.addKeypress('srcollDown', {
     pattern: {
@@ -730,6 +715,8 @@ V.addKeypress('goInsert', {
             },
             execute: function() {
                 clear();
+                // fix ie6/7 blur when hit escape
+                window.focus();
                 return true;
             }
         }
@@ -741,7 +728,7 @@ V.addKeyup('blur', {
         filter: function (c, s, keyStroke) {
             return keyStroke.isEscape();
         },
-        execute: function() {
+        execute: function(c, s, keyStroke) {
             var activeElement,
                 elements;
 
@@ -759,6 +746,7 @@ V.addKeyup('blur', {
                 }
             }
 
+            window.focus();
             return true;
         }
     }
@@ -783,11 +771,21 @@ V.addKeyup('blur', {
     hideHelp = function() {
         var helpContainer = document.getElementById(CONSTANTS.HELP_VIEW.HTML_ID);
         if (helpContainer) {
-            helpContainer.style.display = 'none';
+            // TODO: generate a value
+            helpContainer.style.left = '-1000px';
+        }
+    },
+    bindDisableBtn = function() {
+        var btn = document.getElementById('vimlike:shortcuts:disableBtn');
+        if (btn) {
+            addListener(btn, 'click', function() {
+                unBindEvents();
+                hideHelp();
+            });
         }
     },
     bindHelpCloseBtn = function() {
-        var closeBtn = document.getElementById('vimlike:bookmarlet:closeBtn');
+        var closeBtn = document.getElementById('vimlike:shortcuts:closeBtn');
 
         if (closeBtn) {
             addListener(closeBtn, 'click', hideHelp);
@@ -813,7 +811,7 @@ V.addKeyup('blur', {
                         if (matches && matches[1] && parseInt(matches[1], 10) < 9) {
                             logger.log('stupid ie, htmlshiv to fix custom tag!');
                             var tag,
-                                tags = 'vim010wrapper vim010hd vim010main vim010hd-lt vim010hd-rt vim010bd vim010-row-rt vim010colon vim010bd-row-lt vim010bd-row-rt vim010-row-hd vim010-col-lt vim010-col-rt vim010row-hd vim010ft vim010ft-lt vim010ft-rt vim010ft-fb vim010ft-rt'.split(/\s+/);
+                                tags = 'vim010container vim010wrapper vim010hd vim010main vim010hd-lt vim010-btn vim010hd-rt vim010bd vim010-row-rt vim010colon vim010bd-row-lt vim010bd-row-rt vim010-row-hd vim010-col-lt vim010-col-rt vim010row-hd vim010ft vim010ft-lt vim010ft-rt vim010ft-rt'.split(/\s+/);
                             while (tag = tags.pop()) {
                                 document.createElement(tag);
                             }
@@ -825,12 +823,13 @@ V.addKeyup('blur', {
                         id: HELP_VIEW.STYLE_ID
                     });
 
-                    helpContainer = doc.createElement('div');
+                    helpContainer = doc.createElement('vim010container');
                     helpContainer.id = HELP_VIEW.HTML_ID;
                     // ie 下要把 元素 先放入 dom 中, 然后在设置 innerHTML 自定义的标签样式才生效
                     document.body.appendChild(helpContainer);
                     helpContainer.innerHTML = HELP_VIEW.HTML;
-                    // 绑定 close 函数
+                    // 绑定 disable 和 close
+                    bindDisableBtn();
                     bindHelpCloseBtn();
                 }
 
@@ -839,7 +838,7 @@ V.addKeyup('blur', {
                     left, top;
                 left = (DOM.getViewWidth() - WIDTH) / 2;
                 top  = DOM.getDocScrollTop() + 200;
-                helpContainer.style.cssText = 'display:block;position:absolute;top:'+top+'px;left:'+left+'px;z-index:99999;width:'+WIDTH+'px;';
+                helpContainer.style.cssText = 'top:'+top+'px;left:'+left+'px;width:'+WIDTH+'px;';
 
                 return true;
             },
@@ -855,21 +854,25 @@ V.addKeyup('blur', {
             },
             execute: function(c,s, keyStroke) {
                 hideHelp();
+                window.focus();
                 return true;
             }
         }
     });
 })();
 
-function bindKeypress() {
-    S.bindEvents(['keypress']);
-    S.bindEvents(['keyup']);
+function bindEvents() {
+    S.bindEvents(['keypress', 'keyup']);
 }
+function unBindEvents() {
+    S.unBindEvents(['keypress', 'keyup']);
+}
+
  
 function init() {
     V.init();
 
-    bindKeypress();
+    bindEvents();
 }
 
 init();

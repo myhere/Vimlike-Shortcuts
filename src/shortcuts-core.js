@@ -505,6 +505,12 @@ function extractToWindow(controller, actionContainer) {
             }
         },
 
+        unBindEvents: function(types) {
+            for (var i = 0, l = types.length; i < l; ++i) {
+                controller.unbindEvent(types[i]);
+            }
+        },
+
         addActions: function (actions) {
             if (actions instanceof Array) {
                 for (var i = 0, len = actions.length; i < len; ++i) {
