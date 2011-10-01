@@ -194,7 +194,9 @@ KeyStroke.prototype = new Proto(KeyStroke, {
         }
 
         // contenteditable
-        if (target.getAttribute('contenteditable')) {
+        var contenteditable = target.getAttribute('contenteditable');
+        // ie8 的 ie7 模式下返回 inherit, WHAT THE HELL!, 其他情况没有测试
+        if (contenteditable && contenteditable !== 'inherit') {
             return false;
         }
 
@@ -469,7 +471,7 @@ Controller.prototype = new Proto(Controller, {
         if (!this.bindedEvents[type]) {
             this.bindedEvents[type] = true;
             Event.addListener(document, type, this.handlers[type]);
-            
+
             logger('[Controller::bindEvent], bind Event: "' + type + '"');
         }
     },

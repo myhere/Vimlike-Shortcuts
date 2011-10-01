@@ -14,7 +14,7 @@
 (function(S) {
 
 logger = S.logger;
-// logger.LOG_LEVEL = '@debug@'; 
+logger.LOG_LEVEL = '@debug@'; 
 // logger.on();
 
 var DOM = {
@@ -370,11 +370,11 @@ var CONSTANTS = {
         HTML_ID: 'vimlike:helpHtmlId',
         STYLE: ''+
 'vim010wrapper{display:block;border-radius:8px;width:100%;height:100%;background-color:#333;overflow:hidden;opacity:0.85;filter:alpha(opacity=85);}'+
-'vim010main{display:block;margin:20px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}'+
-'vim010hd{display:block;border-bottom:1px solid #999;width:100%;height:20px;font-weight:bold;}'+
+'vim010main{display:block;margin:15px 20px 10px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}'+
+'vim010hd{display:block;height:24px;font-weight:bold;}'+
 'vim010hd-lt{float:left;font-size:16px;}'+
 'vim010hd-rt{float:right;color:#dd0;text-decoration:underline;}'+
-'vim010bd{display:block;margin-top:10px;border-bottom:1px solid #999;width:100%;overflow:hidden;zoom:1;}'+
+'vim010bd{display:block;margin-top:2px;border-top:1px solid #999;width:100%;width:100%;padding-top:8px;overflow:hidden;zoom:1;}'+
 'vim010bd-row-lt{float:left;width:40%;}'+
 'vim010bd-row-rt{float:left;width:60%;-width:50%;}'+
 'vim010row-hd{display:block;margin-bottom:5px;width:100%;text-align:center;color: #DD0;font-weight: bold;font-size:14px;}'+
@@ -382,7 +382,7 @@ var CONSTANTS = {
 'vim010-col-lt, vim010-col-rt{float:left;height:20px;line-height:20px;}'+
 'vim010-col-lt{width:35%;text-align:right;color:#DD0;font-family: "courier new",monospace;font-weight:bold;}'+
 'vim010-col-rt{width:65%;text-align:left;text-indent:3px;font-family:arial,sans-serif;}'+
-'vim010ft{display:block;margin-top:6px;overflow:hidden;zoom:1;}'+
+'vim010ft{display:block;margin-top:6px;border-top:1px solid #999;padding-top:8px;overflow:hidden;zoom:1;}'+
 'vim010-fb{color:#f60;text-decoration:underline;}'+
 'vim010ft-lt{float:left;}'+
 'vim010ft-rt{float:right;}',
@@ -827,13 +827,11 @@ V.addKeyup('blur', {
 
                     helpContainer = doc.createElement('div');
                     helpContainer.id = HELP_VIEW.HTML_ID;
-                    // ie 下直接设置 innerHTML 不会有样式
-                    setTimeout(function() {
-                        helpContainer.innerHTML = HELP_VIEW.HTML;
-                        document.body.appendChild(helpContainer);
-                        // 绑定 close 函数
-                        bindHelpCloseBtn();
-                    }, 100);
+                    // ie 下要把 元素 先放入 dom 中, 然后在设置 innerHTML 自定义的标签样式才生效
+                    document.body.appendChild(helpContainer);
+                    helpContainer.innerHTML = HELP_VIEW.HTML;
+                    // 绑定 close 函数
+                    bindHelpCloseBtn();
                 }
 
                 // 调整位置

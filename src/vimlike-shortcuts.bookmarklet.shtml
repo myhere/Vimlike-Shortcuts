@@ -1,4 +1,5 @@
-<!doctype html> <html> 
+<!doctype html> 
+<html> 
 <head> 
 <meta charset="utf-8" /> 
 <title>vimlike-shortcuts</title> 
@@ -16,17 +17,10 @@
 })(window.shortcuts);
 </script> 
 
-
-<script>
-(function() {
-    var tag,
-        tags = 'vim010wrapper vim010hd vim010main vim010hd-lt vim010hd-rt vim010bd vim010-row-rt vim010colon vim010bd-row-lt vim010bd-row-rt vim010-row-hd vim010-col-lt vim010-col-rt vim010row-hd vim010ft vim010ft-lt vim010ft-rt vim010ft-fb vim010ft-rt'.split(/\s+/);
-    while (tag = tags.pop()) {
-        console.log(tag);
-        document.createElement(tag);
-    }
-})();
-</script>
+<style>
+.wrapper{display:block;margin:0 auto;width:800px;}
+</style>
+<div class="wrapper" id="help:container"></div>
 
 <script>
 function addStyleSheet(clsText, attrs) {
@@ -50,6 +44,15 @@ function addStyleSheet(clsText, attrs) {
         doc.body.appendChild(style);
 }
 
+(function() {
+    var tag,
+        tags = 'vim010wrapper vim010hd vim010main vim010hd-lt vim010hd-rt vim010bd vim010-row-rt vim010colon vim010bd-row-lt vim010bd-row-rt vim010-row-hd vim010-col-lt vim010-col-rt vim010row-hd vim010ft vim010ft-lt vim010ft-rt vim010ft-fb vim010ft-rt'.split(/\s+/);
+    while (tag = tags.pop()) {
+        console.log(tag);
+        document.createElement(tag);
+    }
+})();
+
 var s = ''+
 'vim010wrapper{display:block;border-radius:8px;width:100%;height:100%;background-color:#333;overflow:hidden;opacity:0.85;filter:alpha(opacity=85);}'+
 'vim010main{display:block;margin:20px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}'+
@@ -70,14 +73,8 @@ var s = ''+
 'vim010ft-rt{float:right;}';
 
 addStyleSheet(s);
-</script>
-<style>
-.wrapper{display:block;margin:0 auto;width:800px;}
-</style>
-<div class="wrapper" id="help:container"></div>
 
-<script>
-    var h = '' +
+var h = '' +
 '<vim010wrapper>'+
     '<vim010main>'+
         '<vim010hd>'+
