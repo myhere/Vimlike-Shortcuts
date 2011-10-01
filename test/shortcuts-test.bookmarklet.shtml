@@ -7,7 +7,7 @@
 <body>
 <div>
 </div>
-<script>
+<script type="text/html">
 (function(v){
     !!v ? v.toggle() : (function(d, s) {
         s = document.createElement('script');
@@ -17,5 +17,7 @@
     })(document);
 })(window.shortcuts);
 </script>
+
+<script charset="utf-8" src="http://localhost/dev/Vimlike-Shortcuts/test/shortcuts-test.js?t="></script>
 </body>
 </html>

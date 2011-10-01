@@ -25,7 +25,7 @@ S.addActions(
                         return true;
                     }
                 },
-                clean: function() {
+                clear: function() {
                     var e1 = document.getElementById('sc:test:zhang');
                     if (e1) {
                         document.body.removeChild(e1);
@@ -50,7 +50,7 @@ S.addActions(
                         return true;
                     }
                 },
-                clean: function() {
+                clear: function() {
                     var e1 = document.getElementById('sc:test:zhanglin1');
                     if (e1) {
                         document.body.removeChild(e1);
@@ -75,7 +75,7 @@ S.addActions(
                         return true;
                     }
                 },
-                clean: function() {
+                clear: function() {
                     var e1 = document.getElementById('sc:test:zhanglin2');
                     if (e1) {
                         document.body.removeChild(e1);
@@ -108,7 +108,6 @@ S.addActions(
 );
 
 S.bindEvents(['keypress', 'keyup']);
-
-logger.log(S.getActions('adfds'));
+// S.bindEvents(['keypress']);
 
 })(this.shortcuts);

@@ -3,7 +3,7 @@
  *
  * NOTE:
  *   - 在 keypress 中绑定可见按键的事件
- *   - 在 keyup 中绑定不可见按键的事件
+ *   - 在 keyup/keydown 中绑定不可见按键的事件, keyup/keydown 添加的 action 的 pattern 不会生效，通过 filter 过滤
  * 
  * Helpers:
  *   logger
@@ -194,7 +194,9 @@ KeyStroke.prototype = new Proto(KeyStroke, {
         }
 
         // contenteditable
-        if (target.getAttribute('contenteditable')) {
+        var contenteditable = target.getAttribute('contenteditable');
+        // ie8 的 ie7 模式下返回 inherit, WHAT THE HELL!, 其他情况没有测试
+        if (contenteditable && contenteditable !== 'inherit') {
             return false;
         }
 
@@ -242,7 +244,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      * @param {Object}
      * Object example:
      * {
-     *   type: 'keydown keypress',
+     *   type: 'keypress',
      *   pattern: {
      *     isRegExp: false,
      *     value: 'zhanglin'
@@ -250,23 +252,19 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     clean: function(currentKeyStroke, keyStrokes, keyStroke)
+     *     clear: function(currentKeyStroke, keyStrokes, keyStroke) {}
      *   }
      * }
      */
+    // TODO: check properties of action
     addAction: function(action) {
-        var types = utils.trim(action.type || '');
-        types = types.split(/\s+/);
+        var type = utils.trim(action.type || '').toLowerCase();
 
-        var type, _action;
-        while (type = types.pop()) {
-            _action = {
-                pattern: action.pattern,
-                fns: action.fns
-            }
-
-            this.actions[type].push(_action);
+        if (!this.actions[type]) {
+            throw new TypeError('Invalid "type" of "action" in [ActionContainer::addAction]');
         }
+
+        this.actions[type].push(action);
     },
 
     getActions: function (type) {
@@ -282,21 +280,35 @@ function Router(actionContainer) {
     this.actionContainer = actionContainer;
 
     this.keyStrokes = '';
+    this.prevKeypressActions = null;
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
-        var type = keyStroke.getEventType();
-        // 只在 keypress 中获取字符
         if (keyStroke.isKeypress()) {
+            // 只在 keypress 中获取字符
             this.keyStrokes += keyStroke.getKeyStroke();
+            this.handleKeypress(keyStroke);
+        } else {
+            this.handleKeyHit(keyStroke);
         }
-        var actions = this.actionContainer.getActions(type);
-        actions = this.filterActions(actions, keyStroke);
-        logger('[Router::handle], matched actioins: ', actions);
+    },
+
+    handleKeypress: function(keyStroke) {
+        var actions = this.getPrevKeypressActions();
+        actions = this.filterKeypresActions(actions, keyStroke);
+        this.setPrevKeypressActions(actions);
+
         this.execute(actions, keyStroke);
     },
 
-    filterActions: function (actions, keyStroke) { // utils.filter
+    handleKeyHit: function(keyStroke) {
+        var actions = this.actionContainer.getActions(keyStroke.getEventType());
+        actions = this.filterKeyHitActions(actions, keyStroke);
+
+        this.execute(actions, keyStroke);
+    },
+
+    filterKeypresActions: function(actions, keyStroke) {
         var results = [],
             currentKeyStroke = keyStroke.getKeyStroke(),
             keyStrokes = this.keyStrokes;
@@ -311,51 +323,71 @@ Router.prototype = new Proto(Router, {
 
         function filter(action) {
             var value,
-                pattern = action.pattern;
+                pattern = action.pattern,
+                pattern_filter_ret;
 
             if (pattern) {
                 value = pattern.value;
                 if (pattern.isRegExp) {
                     value = new RegExp(value);
-                    if (value.test(keyStrokes)) {
-                        customFilter(action);
-                    } else {
-                        executeClean(action);
-                    }
-                } else { 
-                    if (value.indexOf(keyStrokes) === 0) {
-                        customFilter(action);
-                    } else {
-                        executeClean(action);
-                    }
+                    pattern_filter_ret = value.test(keyStrokes);
+                } else {
+                    pattern_filter_ret = value.indexOf(keyStrokes) === 0;
+                }
+
+                if (pattern_filter_ret && filterByFn(action)) {
+                    results.push(action);
+                } else {
+                    // 执行不符合要求的 clear 函数, 因为之前执行了他的 execute 方法, 可能需要清理
+                    executeClear(action);
                 }
             } else {
-                customFilter(action);
+                filterByFn(action);
             }
         }
 
-        function customFilter(action) {
-            var fn = action.fns && action.fns.filter;
-            var clean = action.fns && action.fns.clean;
-            if (typeof fn === 'function') {
-                if (fn(currentKeyStroke, keyStrokes, keyStroke)) {
-                    results.push(action);
-                } { // 执行不符合按键的 action 的 clean 函数
-                    executeClean(action)
+        function filterByFn(action) {
+            var filter = action.fns && action.fns.filter;
+            if (typeof filter === 'function') {
+                if (filter(currentKeyStroke, keyStrokes, keyStroke)) {
+                    return true;
+                } else {
+                    return false;
                 }
             } else {
+                return true;
+            }
+        }
+
+        // 执行被过滤掉的 clear 函数
+        function executeClear(action) {
+            var clear = action.fns && action.fns.clear;
+
+            if (typeof clear === 'function') {
+                clear(currentKeyStroke, keyStrokes, keyStroke);
+            }
+        }
+    },
+
+    // keydown/keyup 只通过 filter 函数过滤, 只有 filter 函数返回 真才会执行
+    filterKeyHitActions: function(actions, keyStroke) {
+        var i = 0,
+            len = actions.length,
+            action,
+            filter,
+            results = [],
+            currentKeyStroke = keyStroke.getKeyStroke(),
+            keyStrokes = this.keyStrokes;
+
+        for (; i < len; ++i) {
+            action = actions[i];
+            filter = action.fns && action.fns.filter;
+            if (typeof filter === 'function' && filter(currentKeyStroke, keyStrokes, keyStroke)) {
                 results.push(action);
             }
         }
 
-        // 执行被过滤掉的 clean 函数
-        function executeClean(action) {
-            var clean = action.fns && action.fns.clean;
-
-            if (typeof clean === 'function') {
-                clean(currentKeyStroke, keyStrokes, keyStroke);
-            }
-        }
+        return results;
     },
 
     execute: function (actions, keyStroke) {
@@ -378,12 +410,33 @@ Router.prototype = new Proto(Router, {
                 allFinished = ret && allFinished;
             }
 
+            // keyup/keydown 函数都返回真也会清空输入!!!
             if (allFinished) {
                 this.clearKeyStrokes();
+                this.clearPrevKeypressActions();
             }
-        } else if (len === 0 && keyStroke.isKeypress()) { // 保证 为 'keypress' 是为了防止 keyup 中 清空 this.keyStrokes 属性
+        } else if (keyStroke.isKeypress()) { // 防止 keydown/keyup 中清空
             this.clearKeyStrokes();
+            this.clearPrevKeypressActions();
         }
+    },
+
+    getPrevKeypressActions: function() {
+        return this.prevKeypressActions == null ?
+                    this.actionContainer.getActions('keypress') :
+                    this.prevKeypressActions;
+    },
+
+    setPrevKeypressActions: function(actions) {
+        if (actions.length > 0) {
+            this.prevKeypressActions = actions;
+        } else {
+            this.clearPrevKeypressActions();
+        }
+    },
+
+    clearPrevKeypressActions: function() {
+        this.prevKeypressActions = null;
     },
 
     clearKeyStrokes: function () {
@@ -418,7 +471,7 @@ Controller.prototype = new Proto(Controller, {
         if (!this.bindedEvents[type]) {
             this.bindedEvents[type] = true;
             Event.addListener(document, type, this.handlers[type]);
-            
+
             logger('[Controller::bindEvent], bind Event: "' + type + '"');
         }
     },
@@ -447,7 +500,7 @@ function extractToWindow(controller, actionContainer) {
                 if (isValidEventType(type)) {
                     controller.bindEvent(type);
                 } else {
-                    throw new Error('[shortcuts::bindEvents], invalid types: ' + types);
+                    throw new TypeError('[shortcuts::bindEvents], invalid types: ' + types);
                 }
             }
         },
@@ -467,7 +520,7 @@ function extractToWindow(controller, actionContainer) {
                 if (isValidEventType(type)) {
                     actionContainer.addAction(action);
                 } else {
-                    throw new Error('[shortcuts::addActions], invalid type: ' + action.type);
+                    throw new TypeError('[shortcuts::addActions], invalid type: ' + action.type);
                 }
             }
         },
@@ -544,7 +597,7 @@ S.addActions(
                         return true;
                     }
                 },
-                clean: function() {
+                clear: function() {
                     var e1 = document.getElementById('sc:test:zhang');
                     if (e1) {
                         document.body.removeChild(e1);
@@ -569,7 +622,7 @@ S.addActions(
                         return true;
                     }
                 },
-                clean: function() {
+                clear: function() {
                     var e1 = document.getElementById('sc:test:zhanglin1');
                     if (e1) {
                         document.body.removeChild(e1);
@@ -594,7 +647,7 @@ S.addActions(
                         return true;
                     }
                 },
-                clean: function() {
+                clear: function() {
                     var e1 = document.getElementById('sc:test:zhanglin2');
                     if (e1) {
                         document.body.removeChild(e1);
@@ -627,7 +680,6 @@ S.addActions(
 );
 
 S.bindEvents(['keypress', 'keyup']);
-
-logger.log(S.getActions('adfds'));
+// S.bindEvents(['keypress']);
 
 })(this.shortcuts);
