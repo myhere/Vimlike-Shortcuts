@@ -242,7 +242,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      * @param {Object}
      * Object example:
      * {
-     *   type: 'keydown keypress',
+     *   type: 'keypress',
      *   pattern: {
      *     isRegExp: false,
      *     value: 'zhanglin'
@@ -250,23 +250,19 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     clear: function(currentKeyStroke, keyStrokes, keyStroke)
+     *     clear: function(currentKeyStroke, keyStrokes, keyStroke) {}
      *   }
      * }
      */
+    // TODO: check properties of action
     addAction: function(action) {
-        var types = utils.trim(action.type || '');
-        types = types.split(/\s+/);
+        var type = utils.trim(action.type || '').toLowerCase();
 
-        var type, _action;
-        while (type = types.pop()) {
-            _action = {
-                pattern: action.pattern,
-                fns: action.fns
-            }
-
-            this.actions[type].push(_action);
+        if (!this.actions[type]) {
+            throw new TypeError('Invalid "type" of "action" in [ActionContainer::addAction]');
         }
+
+        this.actions[type].push(action);
     },
 
     getActions: function (type) {
@@ -286,8 +282,8 @@ function Router(actionContainer) {
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
-        // 只在 keypress 中获取字符
         if (keyStroke.isKeypress()) {
+            // 只在 keypress 中获取字符
             this.keyStrokes += keyStroke.getKeyStroke();
             this.handleKeypress(keyStroke);
         } else {
@@ -325,44 +321,44 @@ Router.prototype = new Proto(Router, {
 
         function filter(action) {
             var value,
-                pattern = action.pattern;
+                pattern = action.pattern,
+                pattern_filter_ret;
 
             if (pattern) {
                 value = pattern.value;
                 if (pattern.isRegExp) {
                     value = new RegExp(value);
-                    if (value.test(keyStrokes)) {
-                        customFilter(action);
-                    } else {
-                        executeClean(action);
-                    }
-                } else { 
-                    if (value.indexOf(keyStrokes) === 0) {
-                        customFilter(action);
-                    } else {
-                        executeClean(action);
-                    }
+                    pattern_filter_ret = value.test(keyStrokes);
+                } else {
+                    pattern_filter_ret = value.indexOf(keyStrokes) === 0;
+                }
+
+                if (pattern_filter_ret && filterByFn(action)) {
+                    results.push(action);
+                } else {
+                    // 执行不符合要求的 clear 函数, 因为之前执行了他的 execute 方法, 可能需要清理
+                    executeClear(action);
                 }
             } else {
-                customFilter(action);
+                filterByFn(action);
             }
         }
 
-        function customFilter(action) {
-            var fn = action.fns && action.fns.filter;
-            if (typeof fn === 'function') {
-                if (fn(currentKeyStroke, keyStrokes, keyStroke)) {
-                    results.push(action);
-                } { // 执行不符合按键的 action 的 clear 函数
-                    executeClean(action)
+        function filterByFn(action) {
+            var filter = action.fns && action.fns.filter;
+            if (typeof filter === 'function') {
+                if (filter(currentKeyStroke, keyStrokes, keyStroke)) {
+                    return true;
+                } else {
+                    return false;
                 }
             } else {
-                results.push(action);
+                return true;
             }
         }
 
         // 执行被过滤掉的 clear 函数
-        function executeClean(action) {
+        function executeClear(action) {
             var clear = action.fns && action.fns.clear;
 
             if (typeof clear === 'function') {
@@ -371,6 +367,7 @@ Router.prototype = new Proto(Router, {
         }
     },
 
+    // keydown/keyup 只通过 filter 函数过滤, 只有 filter 函数返回 真才会执行
     filterKeyHitActions: function(actions, keyStroke) {
         var i = 0,
             len = actions.length,
@@ -411,6 +408,7 @@ Router.prototype = new Proto(Router, {
                 allFinished = ret && allFinished;
             }
 
+            // keyup/keydown 函数都返回真也会清空输入!!!
             if (allFinished) {
                 this.clearKeyStrokes();
                 this.clearPrevKeypressActions();
@@ -500,7 +498,7 @@ function extractToWindow(controller, actionContainer) {
                 if (isValidEventType(type)) {
                     controller.bindEvent(type);
                 } else {
-                    throw new Error('[shortcuts::bindEvents], invalid types: ' + types);
+                    throw new TypeError('[shortcuts::bindEvents], invalid types: ' + types);
                 }
             }
         },
@@ -520,7 +518,7 @@ function extractToWindow(controller, actionContainer) {
                 if (isValidEventType(type)) {
                     actionContainer.addAction(action);
                 } else {
-                    throw new Error('[shortcuts::addActions], invalid type: ' + action.type);
+                    throw new TypeError('[shortcuts::addActions], invalid type: ' + action.type);
                 }
             }
         },
@@ -586,7 +584,8 @@ main();
 (function(S) {
 
 logger = S.logger;
-logger.on();
+// logger.LOG_LEVEL = '@debug@'; 
+// logger.on();
 
 var DOM = {
     /**
@@ -700,14 +699,8 @@ var DOM = {
     },
 
     getViewWidth: function() {
-        var doc = document,
-            width = window.innerWidth;
-            
-        if (typeof width == 'undefined') {
-            width = Math.max(doc.documentElement.clientWidth, doc.body.clientWidth);
-        }
-
-        return width;
+        var doc = document;
+        return Math.max(doc.documentElement.clientWidth, doc.body.clientWidth);
     },
 
     getDocHeight: function() {
@@ -929,7 +922,7 @@ var V = (function() {
                 if (!utils.in_array(ids[i]), blackList) {
                     S.addActions(modules[i]);
                     
-                    // logger.log('[V::init], init module: "' + ids[i] +'"');
+                    logger.log('[V::init], add action: "' + ids[i] +'"');
                 }
             }
         }
@@ -1010,6 +1003,7 @@ var filterByTarget = function(c, s, keyStroke) {
     return keyStroke.isValidKeyStroke();
 };
 
+/*
 V.addKeypress('sayHello', {
     pattern: {
         value: 'zhanglin'
@@ -1025,6 +1019,7 @@ V.addKeypress('sayHello', {
         }
     }
 });
+*/
 
 V.addKeypress('srcollDown', {
     pattern: {
@@ -1117,7 +1112,6 @@ V.addKeypress('goInsert', {
                 setTimeout(function() {
                     inputEle.focus();
                     inputEle = null;
-                    // inputEle.style.background = 'red';
                 }, 1);
             }
 
@@ -1130,6 +1124,36 @@ V.addKeypress('goInsert', {
     var tagContainer,
         findedLinkTagPair;
 
+    function generateTag(len) {
+        var keys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
+            z26s = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'],
+            key_len = keys.length,
+            dig_cnt = Number(len-1).toString(key_len).length;
+
+        var tags = [],
+            i = 0,
+            j,
+            k,
+            idx,
+            n26,
+            tag;
+        for (; i < len; ++i) {
+            j = 0;
+            tag = '';
+            n26 = i.toString(key_len);
+            while (k = n26.charAt(j++)) {
+                idx = utils.indexOf(z26s, k);
+                tag += keys[idx];
+            }
+            if (tag.length < dig_cnt) {
+                tag = (new Array(dig_cnt - tag.length + 1)).join(keys[0]) + tag;
+            }
+
+            tags.push(tag);
+        }
+
+        return tags;
+    }
     function filterLinks(findedLinkTagPair, currentKeyStrokes, tagContainer) {
         var suffix = currentKeyStrokes.substr(1);
 
@@ -1144,36 +1168,20 @@ V.addKeypress('goInsert', {
         });
     }
     function tagEachLink(links, tagContainer) {
-        var findedLinkTagPair = [];
-
-        var keys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
-            z26s = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'],
-            key_len = keys.length,
-            dig_cnt = Number(links.length).toString(key_len).length;
+        var findedLinkTagPair = [],
+            tags = generateTag(links.length);
 
         utils.forEach(links, function(link, index) {
-            var digits = index.toString(key_len),
-                vim_key = '',
-                i = 0,
-                k, idx;
-            while (k = digits.charAt(i++)) {
-                idx = utils.indexOf(z26s, k);
-                vim_key += keys[idx];
-            }
-
-            if (vim_key.length < dig_cnt) {
-                vim_key = (new Array(dig_cnt - vim_key.length + 1)).join('a') + vim_key;
-            }
-
             var ins = document.createElement('ins');
             ins.className = 'vimlike-shortcuts-found-tag'; 
             var ele_pos = DOM.getElementPosition(link);
             var cssText = 'left:' + ele_pos.left + 'px;top:' + ele_pos.top + 'px;';
             ins.style.cssText = cssText;
-            ins.innerHTML = vim_key;
+            var tag = tags[index];
+            ins.innerHTML = tag; 
             tagContainer.appendChild(ins);
 
-            findedLinkTagPair.push([vim_key, link, ins]);
+            findedLinkTagPair.push([tag, link, ins]);
         });
 
         // 没有样式时添加
@@ -1186,6 +1194,19 @@ V.addKeypress('goInsert', {
         document.body.appendChild(tagContainer);
 
         return findedLinkTagPair;
+    }
+    function click(ele, new_tab) {
+        var attr_target = ele.getAttribute('target');
+        if (new_tab) {
+            ele.setAttribute('target', '_blank');
+        }
+        fireClick(ele);
+        if (new_tab) {
+            setTimeout(function() {
+                ele.setAttribute('target', attr_target);
+                ele = null;
+            }, 10);
+        }
     }
     function fireClick(ele) {
         // hack for so safe Firefox
@@ -1216,7 +1237,6 @@ V.addKeypress('goInsert', {
             ele.click();
         }
     }
-
     function clear() {
         try {
             document.body.removeChild(tagContainer);
@@ -1251,24 +1271,7 @@ V.addKeypress('goInsert', {
         if (len > 1) {
             return;
         } else if (len === 1){
-            var click = function(ele, newTab) {
-                var attr_target = ele.getAttribute('target');
-                if (newTab) {
-                    ele.setAttribute('target', '_blank');
-                }
-
-                fireClick(ele);
-
-                if (newTab) {
-                    setTimeout(function() {
-                        ele.setAttribute('target', attr_target);
-                        ele = null;
-                    }, 10);
-                }
-            };
-
             click(links[0][1], keyStrokes.charAt(0) === 'F');
-
             clear();
         }
 
@@ -1400,7 +1403,7 @@ V.addKeyup('blur', {
                         document.body.appendChild(helpContainer);
                         // 绑定 close 函数
                         bindHelpCloseBtn();
-                    }, 10);
+                    }, 100);
                 }
 
                 // 调整位置

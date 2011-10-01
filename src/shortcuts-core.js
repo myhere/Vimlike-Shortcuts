@@ -242,7 +242,7 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      * @param {Object}
      * Object example:
      * {
-     *   type: 'keydown keypress',
+     *   type: 'keypress',
      *   pattern: {
      *     isRegExp: false,
      *     value: 'zhanglin'
@@ -250,23 +250,19 @@ ActionContainer.prototype = new Proto(ActionContainer, {
      *   fns: {
      *     filter: function(currentKeyStroke, keyStrokes, keyStroke) {},
      *     execute: function(currentKeyStroke, keyStrokes, keyStroke) {},
-     *     clear: function(currentKeyStroke, keyStrokes, keyStroke)
+     *     clear: function(currentKeyStroke, keyStrokes, keyStroke) {}
      *   }
      * }
      */
+    // TODO: check properties of action
     addAction: function(action) {
-        var types = utils.trim(action.type || '');
-        types = types.split(/\s+/);
+        var type = utils.trim(action.type || '').toLowerCase();
 
-        var type, _action;
-        while (type = types.pop()) {
-            _action = {
-                pattern: action.pattern,
-                fns: action.fns
-            }
-
-            this.actions[type].push(_action);
+        if (!this.actions[type]) {
+            throw new TypeError('Invalid "type" of "action" in [ActionContainer::addAction]');
         }
+
+        this.actions[type].push(action);
     },
 
     getActions: function (type) {
@@ -286,8 +282,8 @@ function Router(actionContainer) {
 }
 Router.prototype = new Proto(Router, {
     handle: function (keyStroke) {
-        // 只在 keypress 中获取字符
         if (keyStroke.isKeypress()) {
+            // 只在 keypress 中获取字符
             this.keyStrokes += keyStroke.getKeyStroke();
             this.handleKeypress(keyStroke);
         } else {
@@ -325,44 +321,44 @@ Router.prototype = new Proto(Router, {
 
         function filter(action) {
             var value,
-                pattern = action.pattern;
+                pattern = action.pattern,
+                pattern_filter_ret;
 
             if (pattern) {
                 value = pattern.value;
                 if (pattern.isRegExp) {
                     value = new RegExp(value);
-                    if (value.test(keyStrokes)) {
-                        customFilter(action);
-                    } else {
-                        executeClean(action);
-                    }
-                } else { 
-                    if (value.indexOf(keyStrokes) === 0) {
-                        customFilter(action);
-                    } else {
-                        executeClean(action);
-                    }
+                    pattern_filter_ret = value.test(keyStrokes);
+                } else {
+                    pattern_filter_ret = value.indexOf(keyStrokes) === 0;
+                }
+
+                if (pattern_filter_ret && filterByFn(action)) {
+                    results.push(action);
+                } else {
+                    // 执行不符合要求的 clear 函数, 因为之前执行了他的 execute 方法, 可能需要清理
+                    executeClear(action);
                 }
             } else {
-                customFilter(action);
+                filterByFn(action);
             }
         }
 
-        function customFilter(action) {
-            var fn = action.fns && action.fns.filter;
-            if (typeof fn === 'function') {
-                if (fn(currentKeyStroke, keyStrokes, keyStroke)) {
-                    results.push(action);
-                } { // 执行不符合按键的 action 的 clear 函数
-                    executeClean(action)
+        function filterByFn(action) {
+            var filter = action.fns && action.fns.filter;
+            if (typeof filter === 'function') {
+                if (filter(currentKeyStroke, keyStrokes, keyStroke)) {
+                    return true;
+                } else {
+                    return false;
                 }
             } else {
-                results.push(action);
+                return true;
             }
         }
 
         // 执行被过滤掉的 clear 函数
-        function executeClean(action) {
+        function executeClear(action) {
             var clear = action.fns && action.fns.clear;
 
             if (typeof clear === 'function') {
@@ -371,6 +367,7 @@ Router.prototype = new Proto(Router, {
         }
     },
 
+    // keydown/keyup 只通过 filter 函数过滤, 只有 filter 函数返回 真才会执行
     filterKeyHitActions: function(actions, keyStroke) {
         var i = 0,
             len = actions.length,
@@ -411,6 +408,7 @@ Router.prototype = new Proto(Router, {
                 allFinished = ret && allFinished;
             }
 
+            // keyup/keydown 函数都返回真也会清空输入!!!
             if (allFinished) {
                 this.clearKeyStrokes();
                 this.clearPrevKeypressActions();
@@ -500,7 +498,7 @@ function extractToWindow(controller, actionContainer) {
                 if (isValidEventType(type)) {
                     controller.bindEvent(type);
                 } else {
-                    throw new Error('[shortcuts::bindEvents], invalid types: ' + types);
+                    throw new TypeError('[shortcuts::bindEvents], invalid types: ' + types);
                 }
             }
         },
@@ -520,7 +518,7 @@ function extractToWindow(controller, actionContainer) {
                 if (isValidEventType(type)) {
                     actionContainer.addAction(action);
                 } else {
-                    throw new Error('[shortcuts::addActions], invalid type: ' + action.type);
+                    throw new TypeError('[shortcuts::addActions], invalid type: ' + action.type);
                 }
             }
         },
