@@ -1499,12 +1499,8 @@ var vimlikeStateMgr = (function() {
     }
 })();
 function extractAPI() {
-    S.toggleVimlike = function() {
-        vimlikeStateMgr.toggle();
-    };
-    S.isVimlikeOn = function() {
-        return vimlikeStateMgr.isOn();
-    };
+    S.toggleVimlike = vimlikeStateMgr.toggle;
+    S.isVimlikeOn   = vimlikeStateMgr.isOn;
     S.showVimlikeHelp = helpController.show;
     S.hideVimlikeHelp = helpController.hide;
 }

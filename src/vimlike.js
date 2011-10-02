@@ -531,8 +531,9 @@ V.addKeypress('goInsert', {
                 // prevent insert
                 setTimeout(function() {
                     inputEle.focus();
+                    inputEle.select();
                     inputEle = null;
-                }, 1);
+                }, 20);
             }
 
             return true;
@@ -921,12 +922,8 @@ var vimlikeStateMgr = (function() {
     }
 })();
 function extractAPI() {
-    S.toggleVimlike = function() {
-        vimlikeStateMgr.toggle();
-    };
-    S.isVimlikeOn = function() {
-        return vimlikeStateMgr.isOn();
-    };
+    S.toggleVimlike = vimlikeStateMgr.toggle;
+    S.isVimlikeOn   = vimlikeStateMgr.isOn;
     S.showVimlikeHelp = helpController.show;
     S.hideVimlikeHelp = helpController.hide;
 }
