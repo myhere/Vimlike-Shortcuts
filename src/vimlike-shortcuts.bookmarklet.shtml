@@ -5,10 +5,10 @@
 <title>vimlike-shortcuts</title> 
 </head> 
 <body> 
-    <p><a href="javascript:(function(v){ !!v ? v.toggle() : (function(d, s) { s = document.createElement('script'); s.charset = 'utf-8'; s.src = 'http://localhost/dev/Vimlike-Shortcuts/build/vimlike-shortcuts.js?t=' + (+new Date); d.getElementsByTagName('head')[0].appendChild(s); })(document); })(window.shortcuts);;">将我拖动到书签栏</a><p> 
+    <p><a href="javascript:(function(v){ !!v ? v.toggleVimlike() : (function(d, s) { s = document.createElement('script'); s.charset = 'utf-8'; s.src = 'http://localhost/dev/Vimlike-Shortcuts/build/vimlike-shortcuts.js?t=' + (+new Date); d.getElementsByTagName('head')[0].appendChild(s); })(document); })(window.shortcuts);;">将我拖动到书签栏</a><p> 
 <script type="text/html"> 
 (function(v){
-    !!v ? v.toggle() : (function(d, s) {
+    !!v ? v.toggleVimlike() : (function(d, s) {
         s = document.createElement('script');
         s.charset = 'utf-8';
         s.src = 'http://localhost/dev/Vimlike-Shortcuts/build/vimlike-shortcuts.js?t=' + (+new Date);

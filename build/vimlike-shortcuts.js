@@ -592,8 +592,7 @@ main();
 (function(S) {
 
 logger = S.logger;
-// logger.LOG_LEVEL = '@debug@'; 
-// logger.on();
+// logger.off();
 
 var DOM = {
     /**
@@ -947,9 +946,14 @@ var CONSTANTS = {
         STYLE_ID: 'vimlike:helpStyleId',
         HTML_ID: 'vimlike:helpHtmlId',
         STYLE: ''+
-'vim010container{display:block;position:absolute;left:-1000px;z-index:99999;transition:left .4s ease-in-out;-moz-transition:left .4s ease-in-out;-webkit-transition:left .4s ease-in-out;}' +
-'vim010wrapper{display:block;border-radius:8px;width:100%;height:100%;background-color:#333;overflow:hidden;opacity:0.85;filter:alpha(opacity=85);}'+
+'vim010container{display:block;position:absolute;left:-1000px;z-index:99999;transition:left .4s ease-in-out;-moz-transition:left .4s ease-in-out;-webkit-transition:left .4s ease-in-out;opacity:.85;filter:alpha(opacity=85);}' +
+// firefox 下透明不能盖住 flash, 因此 firefox 下设置透明度为 1
+'@-moz-document url-prefix() {vim010container {opacity:1.0}}' +
+// iframe 来盖住 flash
+'vim010container iframe{position:absolute;top:0;left:0;z-index:99999;width:100%;height:100%;border:none;}' +
+'vim010wrapper{position:relative;z-index:99999;display:block;width:100%;height:100%;background-color:#333;overflow:hidden;}'+
 'vim010main{display:block;margin:15px 20px 10px;background:transparent;color:#fff;font-family:arial,sans-serif;font-size:13px;}'+
+'@-moz-document url-prefix() {vim010main{opacity:.85}}' +
 'vim010hd{display:block;height:24px;font-weight:bold;}'+
 'vim010hd-lt{float:left;font-size:16px;}'+
 'vim010hd-rt{float:right;}'+
@@ -965,13 +969,14 @@ var CONSTANTS = {
 'vim010-col-rt{width:65%;text-align:left;text-indent:3px;font-family:arial,sans-serif;}'+
 'vim010ft{display:block;margin-top:6px;border-top:1px solid #999;padding-top:8px;overflow:hidden;zoom:1;}'+
 'vim010ft-lt{float:left;}'+
-'vim010ft-lt a{font-size:12px;line-height:18px;color:#f60;background:none;text-decoration:underline}' +
+'vim010ft-lt a{font-size:12px;line-height:18px;color:#f60 !important;background:none !important;text-decoration:underline}' +
 'vim010ft-rt{float:right;}',
         HTML: ''+
+'<iframe frameborder="0""></iframe>'+
 '<vim010wrapper>'+
     '<vim010main>'+
         '<vim010hd>'+
-            '<vim010hd-lt>Vim-like Shortcut Help<vim010-btn id="vimlike:shortcuts:disableBtn" title="disable keyboard shortcuts">disable shortcuts</vim010-btn></vim010hd-lt>'+
+            '<vim010hd-lt>Vim-like Shortcut Help<vim010-btn id="vimlike:shortcuts:disableBtn"></vim010-btn></vim010hd-lt>'+
             '<vim010hd-rt><vim010-btn id="vimlike:shortcuts:closeBtn" title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
         '</vim010hd>'+
         '<vim010bd>'+
@@ -1330,7 +1335,7 @@ V.addKeyup('blur', {
     }
 });
 
-(function() {
+var helpController = (function() {
     var addListener = function() {
         if (document.addEventListener) {
             return function(node, type, fn) {
@@ -1346,6 +1351,19 @@ V.addKeyup('blur', {
             }
         }
     }(),
+    html5shiv = function() {
+        var ua = window.navigator.userAgent.toLowerCase(),
+        matches = ua.match(/msie ([\w.]+)/);
+        if (matches && matches[1] && parseInt(matches[1], 10) < 9) {
+            logger.log('stupid ie, htmlshiv to fix custom tag!');
+            var tag,
+                tags = 'vim010container vim010wrapper vim010hd vim010main vim010hd-lt vim010-btn vim010hd-rt vim010bd vim010-row-rt vim010colon vim010bd-row-lt vim010bd-row-rt vim010-row-hd vim010-col-lt vim010-col-rt vim010row-hd vim010ft vim010ft-lt vim010ft-rt vim010ft-rt'.split(/\s+/);
+            while (tag = tags.pop()) {
+                document.createElement(tag);
+            }
+        }
+    
+    },
     hideHelp = function() {
         var helpContainer = document.getElementById(CONSTANTS.HELP_VIEW.HTML_ID);
         if (helpContainer) {
@@ -1353,13 +1371,34 @@ V.addKeyup('blur', {
             helpContainer.style.left = '-1000px';
         }
     },
-    bindDisableBtn = function() {
+    bindToggleBtn = function() {
         var btn = document.getElementById('vimlike:shortcuts:disableBtn');
         if (btn) {
             addListener(btn, 'click', function() {
-                unBindEvents();
+                vimlikeStateMgr.toggle();
                 hideHelp();
             });
+        }
+    },
+    showToggleBtn = function() {
+        var stateConf = {
+            on: {
+                title: 'disable keyboard shortcuts',
+                text: 'disable shortcuts'
+            },
+            off: {
+                title: 'enable keyboard shortcuts',
+                text: 'enable shortcuts'
+            }
+        };
+        vimlikeStateMgr.isOn() ?
+            showBtn(stateConf.on) :
+            showBtn(stateConf.off);
+
+        function showBtn(conf) {
+            var btn = document.getElementById('vimlike:shortcuts:disableBtn');
+            btn.title = conf.title;
+            btn.innerHTML = conf.text;
         }
     },
     bindHelpCloseBtn = function() {
@@ -1368,7 +1407,43 @@ V.addKeyup('blur', {
         if (closeBtn) {
             addListener(closeBtn, 'click', hideHelp);
         }
-    }
+    },
+    execute = function() {
+        var doc = document,
+            HELP_VIEW = CONSTANTS.HELP_VIEW,
+            helpContainer = doc.getElementById(HELP_VIEW.HTML_ID);
+
+        if (!helpContainer) { // 不存在
+            // ie<9 htmlshiv fix custom tag
+            html5shiv();
+
+            // 添加 style
+            DOM.addStyleSheet(HELP_VIEW.STYLE, {
+                id: HELP_VIEW.STYLE_ID
+            });
+
+            helpContainer = doc.createElement('vim010container');
+            helpContainer.id = HELP_VIEW.HTML_ID;
+            // ie 下要把 元素 先放入 dom 中, 然后在设置 innerHTML 自定义的标签样式才生效
+            document.body.appendChild(helpContainer);
+            helpContainer.innerHTML = HELP_VIEW.HTML;
+            // 绑定 disable 和 close
+            bindToggleBtn();
+            bindHelpCloseBtn();
+        }
+
+        // 调整位置
+        var WIDTH  = HELP_VIEW.WIDTH,
+            left, top;
+        left = (DOM.getViewWidth() - WIDTH) / 2;
+        top  = DOM.getDocScrollTop() + 200;
+        helpContainer.style.cssText = 'top:'+top+'px;left:'+left+'px;width:'+WIDTH+'px;z-index:99999;';
+
+        // 根据当前状态显示
+        showToggleBtn();
+
+        return true;
+    };
 
     V.addKeypress('help', {
         pattern: {
@@ -1376,53 +1451,8 @@ V.addKeyup('blur', {
         },
         fns: {
             filter: filterByTarget,
-            execute: function() {
-                var doc = document,
-                    HELP_VIEW = CONSTANTS.HELP_VIEW,
-                    helpContainer = doc.getElementById(HELP_VIEW.HTML_ID);
-
-                if (!helpContainer) { // 不存在
-                    // ie6/7 htmlshiv fix custom tag
-                    (function() {
-                        var ua = window.navigator.userAgent.toLowerCase(),
-                        matches = ua.match(/msie ([\w.]+)/);
-                        if (matches && matches[1] && parseInt(matches[1], 10) < 9) {
-                            logger.log('stupid ie, htmlshiv to fix custom tag!');
-                            var tag,
-                                tags = 'vim010container vim010wrapper vim010hd vim010main vim010hd-lt vim010-btn vim010hd-rt vim010bd vim010-row-rt vim010colon vim010bd-row-lt vim010bd-row-rt vim010-row-hd vim010-col-lt vim010-col-rt vim010row-hd vim010ft vim010ft-lt vim010ft-rt vim010ft-rt'.split(/\s+/);
-                            while (tag = tags.pop()) {
-                                document.createElement(tag);
-                            }
-                        }
-                    })();
-
-                    // 添加 style
-                    DOM.addStyleSheet(HELP_VIEW.STYLE, {
-                        id: HELP_VIEW.STYLE_ID
-                    });
-
-                    helpContainer = doc.createElement('vim010container');
-                    helpContainer.id = HELP_VIEW.HTML_ID;
-                    // ie 下要把 元素 先放入 dom 中, 然后在设置 innerHTML 自定义的标签样式才生效
-                    document.body.appendChild(helpContainer);
-                    helpContainer.innerHTML = HELP_VIEW.HTML;
-                    // 绑定 disable 和 close
-                    bindDisableBtn();
-                    bindHelpCloseBtn();
-                }
-
-                // 调整位置
-                var WIDTH  = HELP_VIEW.WIDTH,
-                    left, top;
-                left = (DOM.getViewWidth() - WIDTH) / 2;
-                top  = DOM.getDocScrollTop() + 200;
-                helpContainer.style.cssText = 'top:'+top+'px;left:'+left+'px;width:'+WIDTH+'px;';
-
-                return true;
-            },
-            clear: function() {
-                hideHelp();
-            }
+            execute: execute,
+            clear: hideHelp
         }
     });
     V.addKeyup('clearHelp', {
@@ -1437,21 +1467,52 @@ V.addKeyup('blur', {
             }
         }
     });
+
+    return {
+        show: execute,
+        hide: hideHelp
+    };
 })();
 
-function bindEvents() {
-    S.bindEvents(['keypress', 'keyup']);
-}
-function unBindEvents() {
-    S.unBindEvents(['keypress', 'keyup']);
-}
 
+
+var vimlikeStateMgr = (function() {
+    var vimlike_binded = false;
+
+    return {
+        isOn: function() {
+            return vimlike_binded;
+        },
+        setOn: function() {
+            vimlike_binded = true;
+            S.bindEvents(['keypress', 'keyup']);
+        },
+        setOff: function() {
+            vimlike_binded = false;
+            S.unBindEvents(['keypress', 'keyup']);
+        },
+        toggle: function() {
+            vimlike_binded ? 
+                vimlikeStateMgr.setOff() :
+                vimlikeStateMgr.setOn();
+        }
+    }
+})();
+function extractAPI() {
+    S.toggleVimlike = function() {
+        vimlikeStateMgr.toggle();
+    };
+    S.isVimlikeOn = function() {
+        return vimlikeStateMgr.isOn();
+    };
+    S.showVimlikeHelp = helpController.show;
+    S.hideVimlikeHelp = helpController.hide;
+}
  
 function init() {
     V.init();
-    bindEvents();
-    // TODO: 
-    // extractToWindow
+    vimlikeStateMgr.setOn();
+    extractAPI()
 }
 
 init();
