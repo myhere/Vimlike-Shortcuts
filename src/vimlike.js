@@ -421,10 +421,10 @@ var CONSTANTS = {
                 '<vim010-col-lt>Ctrl + w<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Close Current Window</vim010-col-rt>'+
                 '<vim010-col-lt>Ctrl + l<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open Url in Current Window</vim010-col-rt>'+
                 '<vim010-col-lt>Ctrl + h<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>View the History</vim010-col-rt>'+
-                '<vim010-col-lt>Ctrl + -><vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Forward</vim010-col-rt>'+
-                '<vim010-col-lt>Ctrl + <-<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Back</vim010-col-rt>'+
                 '<vim010-col-lt>Ctrl + Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Next Tab</vim010-col-rt>'+
                 '<vim010-col-lt>Ctrl +Shift+Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Previous Tab</vim010-col-rt>'+
+                '<vim010-col-lt>Alt + -><vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Forward</vim010-col-rt>'+
+                '<vim010-col-lt>Alt + <-<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Back</vim010-col-rt>'+
                 '<vim010-col-lt>Alt + Home<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Go to Home Page</vim010-col-rt>'+
             '</vim010bd-row-rt>'+
         '</vim010bd>'+
