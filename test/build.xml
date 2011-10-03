@@ -1,5 +1,5 @@
 <project name="vimlike-shortcuts" default="build" basedir=".">
-    <description>Vimlike-Shortcuts Build File</description>
+    <description>Vimlike-Shortcuts Test Build File</description>
 
     <property name="encoding.input" value="utf-8" />
     <property name="encoding.output" value="utf-8" />

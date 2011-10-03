@@ -32,7 +32,7 @@ function logger() {
     var args = Array.prototype.slice.call(arguments);
     // args.unshift(+new Date + ':');
 
-    var log = window.console && console.log;
+    var log = window.console && window.console.log;
     if (log) {
         if (log.apply) {
             log.apply(console, args);
@@ -78,8 +78,8 @@ var utils = {
 };
 
 /**
- * @param {Function}
- * @param {Object}
+ * @param __constructor {Function}
+ * @param proto {Object}
  */ 
 function Proto(__constructor, proto) {
     if (typeof __constructor !== 'function') {

@@ -13,7 +13,7 @@
  */
 (function(S) {
 
-logger = S.logger;
+var logger = S.logger;
 // logger.off();
 
 var DOM = {
@@ -343,7 +343,7 @@ var V = (function() {
         },
 
         /**
-         * @param {Array}
+         * @param blackList {Array}
          */
         init: function (blackList) {
             blackList = blackList || [];
@@ -633,7 +633,7 @@ V.addKeypress('goInsert', {
             logger.log('[fireClick], firefox, special click');
             var attr_target = ele.getAttribute('target');
             if (!attr_target || attr_target == '_self') { // self tab
-                location.href = ele.href;
+                window.location.href = ele.href;
             } else { // new tab
                 window.open(ele.href);
             }

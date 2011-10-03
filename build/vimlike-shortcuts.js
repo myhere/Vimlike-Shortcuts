@@ -32,7 +32,7 @@ function logger() {
     var args = Array.prototype.slice.call(arguments);
     // args.unshift(+new Date + ':');
 
-    var log = window.console && console.log;
+    var log = window.console && window.console.log;
     if (log) {
         if (log.apply) {
             log.apply(console, args);
@@ -78,8 +78,8 @@ var utils = {
 };
 
 /**
- * @param {Function}
- * @param {Object}
+ * @param __constructor {Function}
+ * @param proto {Object}
  */ 
 function Proto(__constructor, proto) {
     if (typeof __constructor !== 'function') {
@@ -600,7 +600,7 @@ main();
  */
 (function(S) {
 
-logger = S.logger;
+var logger = S.logger;
 // logger.off();
 
 var DOM = {
@@ -930,7 +930,7 @@ var V = (function() {
         },
 
         /**
-         * @param {Array}
+         * @param blackList {Array}
          */
         init: function (blackList) {
             blackList = blackList || [];
@@ -1220,7 +1220,7 @@ V.addKeypress('goInsert', {
             logger.log('[fireClick], firefox, special click');
             var attr_target = ele.getAttribute('target');
             if (!attr_target || attr_target == '_self') { // self tab
-                location.href = ele.href;
+                window.location.href = ele.href;
             } else { // new tab
                 window.open(ele.href);
             }
@@ -1314,34 +1314,40 @@ V.addKeypress('goInsert', {
     });
 })();
 
+
+(function() {
+function blurElements() {
+    if (document.activeElement) {
+        try {
+            document.activeElement.blur();
+        } catch(e) {}
+    }
+    blurFocus(document.getElementsByTagName('input'));
+    blurFocus(document.getElementsByTagName('textarea'));
+}
+function blurFocus(eles) {
+    for (var i = 0,len = eles.length; i < len; ++i) {
+        try {
+            eles[i].blur();
+        } catch(e){}
+    }
+}
+
 V.addKeyup('blur', {
     fns: {
         filter: function (c, s, keyStroke) {
             return keyStroke.isEscape();
         },
         execute: function(c, s, keyStroke) {
-            var activeElement,
-                elements;
-
-            // @see:  http://stackoverflow.com/questions/967096/using-jquery-to-test-if-an-input-has-focus
-            if (activeElement = document.activeElement) {
-                try {
-                    activeElement.blur();
-                } catch(e) {}
-            } else {
-                elements = document.getElementsByTagName('input');
-                for (var i = 0; activeElement = elements[i]; ++i) {
-                    try {
-                        activeElement.blur();
-                    } catch(e) {}
-                }
-            }
+            blurElements();
 
             window.focus();
             return true;
         }
     }
 });
+
+})();
 
 var helpController = (function() {
     var addListener = function() {

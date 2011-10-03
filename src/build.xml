@@ -1,14 +1,17 @@
 <project name="vimlike-shortcuts" default="build" basedir=".">
     <description>Vimlike-Shortcuts Build File</description>
 
+    <property name="root.dir" location="${ant.file.vimlike-shortcuts}/../../" />
+    <property name="gcc.jar" location="${root.dir}/support/compiler.jar" />
+
     <property name="encoding.input" value="utf-8" />
     <property name="encoding.output" value="utf-8" />
 
-    <target name="build" depends="concat-vimlike">
+    <target name="build" depends="compiler-vimlike">
     </target>
 
-    <target name="concat-vimlike" >
-        <concat destfile="../build/vimlike-shortcuts.js"
+    <target name="concat-vimlike">
+        <concat destfile="${root.dir}/build/vimlike-shortcuts.debug.js"
                 encoding="${encoding.input}"
                 outputencoding="${encoding.output}">
             <path path="shortcuts-core.js"  />
@@ -16,12 +19,17 @@
         </concat>
     </target>
 
-    <!--<target name="concat-test">-->
-        <!--<concat destfile="../build/shortcuts-test.js"-->
-                <!--encoding="${encoding.input}"-->
-                <!--outputencoding="${encoding.output}">-->
-            <!--<path path="shortcuts-core.js"  />-->
-            <!--<path path="test.js"  />-->
-        <!--</concat>-->
-    <!--</target>-->
+    <target name="compiler-vimlike" depends="concat-vimlike">
+        <apply executable="java" verbose="true" dest="${root.dir}/build">
+            <fileset dir="${root.dir}/build" includes="vimlike-shortcuts.debug.js" />
+            <arg line="-jar"/>
+            <arg path="${root.dir}/support/compiler.jar"/>
+            <arg line="--charset ${encoding.input}"/>
+            <arg line="--warning_level QUIET"/>
+            <arg value="--js"/>
+            <srcfile/>
+            <arg line="--js_output_file vimlike-shortcuts.js"/>
+        </apply>
+    </target>
+
 </project>
