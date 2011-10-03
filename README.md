@@ -1,4 +1,4 @@
-Vimlike-Shortcuts - Power your webpage with shortcuts
+Vimlike-Shortcuts - Power webpage with shortcuts
 =============================================================
 
 What's this?  
