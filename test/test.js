@@ -84,12 +84,12 @@ S.addActions(
                     return keyStroke.isEscape();
                 },
                 execute: function() {
-                    //var e1 = document.getElementById('sc:test:zhang'),
-                    var e2 = document.getElementById('sc:test:zhanglin1'),
+                    var e1 = document.getElementById('sc:test:zhang'),
+                        e2 = document.getElementById('sc:test:zhanglin1'),
                         e3 = document.getElementById('sc:test:zhanglin2');
 
                     try {
-                        // document.body.removeChild(e1);
+                        document.body.removeChild(e1);
                         document.body.removeChild(e2);
                         document.body.removeChild(e3);
                     } catch(e) {}
