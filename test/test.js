@@ -2,7 +2,7 @@
 var logger = S.logger;
 logger.on();
 
-var filterByTarget = function(c, s, keyStroke) {
+var filterByTarget = function(currentKeyStroke, allKeyStrokes, keyStroke) {
     return keyStroke.isValidKeyStroke();
 };
 
@@ -11,20 +11,20 @@ S.addActions(
         {
             type:'keypress',
             pattern: {
-                value: 'zhang'
+                value: 'hello'
             },
             fns: {
                 filter: filterByTarget,
-                execute: function(c, s, keyStroke) {
+                execute: function(currentKeyStroke, allKeyStrokes, keyStroke) {
                     var div_ele = document.createElement('div');
-                    div_ele.innerHTML = 'zhang';
+                    div_ele.innerHTML = allKeyStrokes;
                     div_ele.style.cssText = 'height:200px;width:200px;background-color:green;';
-                    div_ele.id='sc:test:zhang';
+                    div_ele.id='sc:test:id1';
                     document.body.appendChild(div_ele);
                     return true;
                 },
-                clear: function() {
-                    var e1 = document.getElementById('sc:test:zhang');
+                clear: function(currentKeyStroke, allKeyStrokes, keyStroke) {
+                    var e1 = document.getElementById('sc:test:id1');
                     if (e1) {
                         document.body.removeChild(e1);
                     }
@@ -34,43 +34,23 @@ S.addActions(
         {
             type:'keypress',
             pattern: {
-                value: 'zhanglin'
+                isRegExp: true,
+                value: '^h(?:o)?w?$'
             },
             fns: {
                 filter: filterByTarget,
-                execute: function(c, s, keyStroke) {
-                    var div_ele = document.createElement('div');
-                    div_ele.innerHTML = 'zhanglin1';
-                    div_ele.style.cssText = 'height:200px;width:200px;background-color:blue;';
-                    div_ele.id='sc:test:zhanglin1';
-                    document.body.appendChild(div_ele);
-                    return true;
-                },
-                clear: function() {
-                    var e1 = document.getElementById('sc:test:zhanglin1');
-                    if (e1) {
-                        document.body.removeChild(e1);
+                execute: function(currentKeyStroke, allKeyStrokes, keyStroke) {
+                    if (currentKeyStroke === 'w') {
+                        var div_ele = document.createElement('div');
+                        div_ele.innerHTML = 'You just Hit:' + allKeyStrokes;
+                        div_ele.style.cssText = 'height:200px;width:200px;background-color:blue;';
+                        div_ele.id='sc:test:id2';
+                        document.body.appendChild(div_ele);
+                        return true;
                     }
-               }
-            }
-        },
-        {
-            type:'keypress',
-            pattern: {
-                value: 'zhanglin'
-            },
-            fns: {
-                filter: filterByTarget,
-                execute: function(c, s, keyStroke) {
-                    var div_ele = document.createElement('div');
-                    div_ele.innerHTML = 'zhanglin2';
-                    div_ele.style.cssText = 'height:200px;width:200px;background-color:yellow;';
-                    div_ele.id='sc:test:zhanglin2';
-                    document.body.appendChild(div_ele);
-                    return true;
                 },
-                clear: function() {
-                    var e1 = document.getElementById('sc:test:zhanglin2');
+                clear: function(currentKeyStroke, allKeyStrokes, keyStroke) {
+                    var e1 = document.getElementById('sc:test:id2');
                     if (e1) {
                         document.body.removeChild(e1);
                     }
@@ -80,18 +60,16 @@ S.addActions(
         {
             type: 'keyup',
             fns: {
-                filter: function(c, s, keyStroke) {
+                filter: function(currentKeyStroke, allKeyStrokes, keyStroke) {
                     return keyStroke.isEscape();
                 },
-                execute: function() {
-                    var e1 = document.getElementById('sc:test:zhang'),
-                        e2 = document.getElementById('sc:test:zhanglin1'),
-                        e3 = document.getElementById('sc:test:zhanglin2');
+                execute: function(currentKeyStroke, allKeyStrokes, keyStroke) {
+                    var e1 = document.getElementById('sc:test:id1'),
+                        e2 = document.getElementById('sc:test:id2');
 
                     try {
                         document.body.removeChild(e1);
                         document.body.removeChild(e2);
-                        document.body.removeChild(e3);
                     } catch(e) {}
 
                     return true;
@@ -102,6 +80,5 @@ S.addActions(
 );
 
 S.bindEvents(['keypress', 'keyup']);
-// S.bindEvents(['keypress']);
 
 })(this.shortcuts);
