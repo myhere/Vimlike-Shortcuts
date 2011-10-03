@@ -32,7 +32,8 @@ function logger() {
     var args = Array.prototype.slice.call(arguments);
     // args.unshift(+new Date + ':');
 
-    var log = window.console && window.console.log;
+    var console = window.console;
+    var log = console && console.log;
     if (log) {
         if (log.apply) {
             log.apply(console, args);

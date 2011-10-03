@@ -20,13 +20,15 @@
     </target>
 
     <target name="compiler-vimlike" depends="concat-vimlike">
-        <apply executable="java" verbose="true" dest="${root.dir}/build">
+        <apply executable="java" verbose="true" dir="${root.dir}/build">
             <fileset dir="${root.dir}/build" includes="vimlike-shortcuts.debug.js" />
             <arg line="-jar"/>
-            <arg path="${root.dir}/support/compiler.jar"/>
+            <arg path="${gcc.jar}"/>
+
             <arg line="--charset ${encoding.input}"/>
             <arg line="--warning_level QUIET"/>
-            <arg value="--js"/>
+
+            <arg line="--js"/>
             <srcfile/>
             <arg line="--js_output_file vimlike-shortcuts.js"/>
         </apply>
