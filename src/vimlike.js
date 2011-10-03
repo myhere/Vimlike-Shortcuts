@@ -404,28 +404,28 @@ var CONSTANTS = {
         '<vim010bd>'+
             '<vim010bd-row-lt>'+
                 '<vim010row-hd>Supported</vim010row-hd>'+
-                '<vim010-col-lt>j<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Down</vim010-col-rt>'+
-                '<vim010-col-lt>k<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll Up</vim010-col-rt>'+
-                '<vim010-col-lt>gg<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Top</vim010-col-rt>'+
-                '<vim010-col-lt>G<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to Bottom</vim010-col-rt>'+
-                '<vim010-col-lt>gi<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Focus Input</vim010-col-rt>'+
-                '<vim010-col-lt>f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link</vim010-col-rt>'+
-                '<vim010-col-lt>F<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Find Link in New Window</vim010-col-rt>'+
-                '<vim010-col-lt>Esc<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Blur Input</vim010-col-rt>'+
-                '<vim010-col-lt>?<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Show This Help</vim010-col-rt>'+
+                '<vim010-col-lt>j<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll down</vim010-col-rt>'+
+                '<vim010-col-lt>k<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Scroll up</vim010-col-rt>'+
+                '<vim010-col-lt>gg<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to top</vim010-col-rt>'+
+                '<vim010-col-lt>G<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Go to bottom</vim010-col-rt>'+
+                '<vim010-col-lt>gi<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Focus input</vim010-col-rt>'+
+                '<vim010-col-lt>f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open link</vim010-col-rt>'+
+                '<vim010-col-lt>F<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open link in new window</vim010-col-rt>'+
+                '<vim010-col-lt>Esc<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Blur input</vim010-col-rt>'+
+                '<vim010-col-lt>?<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Show this help</vim010-col-rt>'+
             '</vim010bd-row-lt>'+
             '<vim010bd-row-rt>'+
                 '<vim010row-hd>Native</vim010row-hd>'+
                 '<vim010-col-lt>Ctrl + f<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Search</vim010-col-rt>'+
                 '<vim010-col-lt>Ctrl + r<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Refresh</vim010-col-rt>'+
-                '<vim010-col-lt>Ctrl + w<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Close Current Window</vim010-col-rt>'+
-                '<vim010-col-lt>Ctrl + l<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open Url in Current Window</vim010-col-rt>'+
-                '<vim010-col-lt>Ctrl + h<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>View the History</vim010-col-rt>'+
-                '<vim010-col-lt>Ctrl + Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Next Tab</vim010-col-rt>'+
-                '<vim010-col-lt>Ctrl +Shift+Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the Previous Tab</vim010-col-rt>'+
-                '<vim010-col-lt>Alt + -><vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Forward</vim010-col-rt>'+
-                '<vim010-col-lt>Alt + <-<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History Back</vim010-col-rt>'+
-                '<vim010-col-lt>Alt + Home<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Go to Home Page</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + w<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Close current window</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + l<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Open url in current window</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + h<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>View the history</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl + Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the next tab</vim010-col-rt>'+
+                '<vim010-col-lt>Ctrl +Shift+Tab<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>Switch to the previous Tab</vim010-col-rt>'+
+                '<vim010-col-lt>Alt + -><vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History forward</vim010-col-rt>'+
+                '<vim010-col-lt>Alt + <-<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt>History back</vim010-col-rt>'+
+                '<vim010-col-lt>Alt + Home<vim010colon>:</vim010colon></vim010-col-lt><vim010-col-rt style="_margin-right:-6px;">Go to home page</vim010-col-rt>'+
             '</vim010bd-row-rt>'+
         '</vim010bd>'+
         '<vim010ft>'+
