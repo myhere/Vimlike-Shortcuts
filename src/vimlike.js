@@ -476,11 +476,9 @@ V.addKeypress('goTop', {
     fns: {
         filter: filterByTarget,
         execute: function (c, keyStrokes) {
-            if (keyStrokes === 'gg') {
-                logger.log('gotop');
-                window.scrollTo(0, 0);
-                return true;
-            }
+            logger.log('gotop');
+            window.scrollTo(0, 0);
+            return true;
         }
     }
 });

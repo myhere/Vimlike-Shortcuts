@@ -402,11 +402,16 @@ Router.prototype = new Proto(Router, {
                 allFinished = true,
                 ret;
             for (; i < len; ++i) {
-                fns = actions[i].fns;
-                execute = fns.execute;
+                // 对于 字符串 pattern, 只有完全输入才执行
+                if (actions[i].pattern.isRegExp || (keyStrokes === actions[i].pattern.value)) {
+                    fns = actions[i].fns;
+                    execute = fns.execute;
 
-                logger('[Router::execute], ',this,currentKeyStroke, keyStrokes, keyStroke);
-                ret = execute(currentKeyStroke, keyStrokes, keyStroke);
+                    logger('[Router::execute], ',this,currentKeyStroke, keyStrokes, keyStroke);
+                    ret = execute(currentKeyStroke, keyStrokes, keyStroke);
+                } else {
+                    ret = false;
+                }
                 allFinished = ret && allFinished;
             }
 
@@ -594,14 +599,12 @@ S.addActions(
             fns: {
                 filter: filterByTarget,
                 execute: function(c, s, keyStroke) {
-                    if (s === 'zhang') {
-                        var div_ele = document.createElement('div');
-                        div_ele.innerHTML = 'zhang';
-                        div_ele.style.cssText = 'height:200px;width:200px;background-color:green;';
-                        div_ele.id='sc:test:zhang';
-                        document.body.appendChild(div_ele);
-                        return true;
-                    }
+                    var div_ele = document.createElement('div');
+                    div_ele.innerHTML = 'zhang';
+                    div_ele.style.cssText = 'height:200px;width:200px;background-color:green;';
+                    div_ele.id='sc:test:zhang';
+                    document.body.appendChild(div_ele);
+                    return true;
                 },
                 clear: function() {
                     var e1 = document.getElementById('sc:test:zhang');
@@ -619,14 +622,12 @@ S.addActions(
             fns: {
                 filter: filterByTarget,
                 execute: function(c, s, keyStroke) {
-                    if (s === 'zhanglin') {
-                        var div_ele = document.createElement('div');
-                        div_ele.innerHTML = 'zhanglin1';
-                        div_ele.style.cssText = 'height:200px;width:200px;background-color:blue;';
-                        div_ele.id='sc:test:zhanglin1';
-                        document.body.appendChild(div_ele);
-                        return true;
-                    }
+                    var div_ele = document.createElement('div');
+                    div_ele.innerHTML = 'zhanglin1';
+                    div_ele.style.cssText = 'height:200px;width:200px;background-color:blue;';
+                    div_ele.id='sc:test:zhanglin1';
+                    document.body.appendChild(div_ele);
+                    return true;
                 },
                 clear: function() {
                     var e1 = document.getElementById('sc:test:zhanglin1');
@@ -644,14 +645,12 @@ S.addActions(
             fns: {
                 filter: filterByTarget,
                 execute: function(c, s, keyStroke) {
-                    if (s === 'zhanglin') {
-                        var div_ele = document.createElement('div');
-                        div_ele.innerHTML = 'zhanglin2';
-                        div_ele.style.cssText = 'height:200px;width:200px;background-color:yellow;';
-                        div_ele.id='sc:test:zhanglin2';
-                        document.body.appendChild(div_ele);
-                        return true;
-                    }
+                    var div_ele = document.createElement('div');
+                    div_ele.innerHTML = 'zhanglin2';
+                    div_ele.style.cssText = 'height:200px;width:200px;background-color:yellow;';
+                    div_ele.id='sc:test:zhanglin2';
+                    document.body.appendChild(div_ele);
+                    return true;
                 },
                 clear: function() {
                     var e1 = document.getElementById('sc:test:zhanglin2');

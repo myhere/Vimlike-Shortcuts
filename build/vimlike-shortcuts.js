@@ -402,11 +402,16 @@ Router.prototype = new Proto(Router, {
                 allFinished = true,
                 ret;
             for (; i < len; ++i) {
-                fns = actions[i].fns;
-                execute = fns.execute;
+                // 对于 字符串 pattern, 只有完全输入才执行
+                if (actions[i].pattern.isRegExp || (keyStrokes === actions[i].pattern.value)) {
+                    fns = actions[i].fns;
+                    execute = fns.execute;
 
-                logger('[Router::execute], ',this,currentKeyStroke, keyStrokes, keyStroke);
-                ret = execute(currentKeyStroke, keyStrokes, keyStroke);
+                    logger('[Router::execute], ',this,currentKeyStroke, keyStrokes, keyStroke);
+                    ret = execute(currentKeyStroke, keyStrokes, keyStroke);
+                } else {
+                    ret = false;
+                }
                 allFinished = ret && allFinished;
             }
 
@@ -1054,11 +1059,9 @@ V.addKeypress('goTop', {
     fns: {
         filter: filterByTarget,
         execute: function (c, keyStrokes) {
-            if (keyStrokes === 'gg') {
-                logger.log('gotop');
-                window.scrollTo(0, 0);
-                return true;
-            }
+            logger.log('gotop');
+            window.scrollTo(0, 0);
+            return true;
         }
     }
 });
