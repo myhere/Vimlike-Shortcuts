@@ -400,18 +400,22 @@ Router.prototype = new Proto(Router, {
                 fns,
                 execute,
                 allFinished = true,
-                ret;
+                ret,
+                pattern;
             for (; i < len; ++i) {
+                pattern = actions[i].pattern;
+                // keydown/keyup 没有 pattern
                 // 对于 字符串 pattern, 只有完全输入才执行
-                if (actions[i].pattern.isRegExp || (keyStrokes === actions[i].pattern.value)) {
+                if (pattern && !pattern.isRegExp && keyStrokes !== pattern.value ) {
+                    ret = false;
+                } else {
                     fns = actions[i].fns;
                     execute = fns.execute;
 
                     logger('[Router::execute], ',this,currentKeyStroke, keyStrokes, keyStroke);
                     ret = execute(currentKeyStroke, keyStrokes, keyStroke);
-                } else {
-                    ret = false;
                 }
+
                 allFinished = ret && allFinished;
             }
 
