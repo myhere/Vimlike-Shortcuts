@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Vim-like bookmarklet</title>
+<style>
+/* css3 button borrowed from http://webdesignerwall.com/tutorials/css3-gradient-buttons */
+body { background: #ededed; width: 800px; height: 2000px; margin: 30px auto; color: #999; font-family:"微软雅黑",arial,sans-serif; }
+p { margin:10px 0 0 ; }
+h1 { margin: 10px 0; }
+a { color: #339; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.button {
+    display: inline-block;
+    zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */
+    *display: inline;
+    vertical-align: baseline;
+    margin: 0 2px;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font: 14px/100% Arial, Helvetica, sans-serif;
+    padding: .5em 2em .55em;
+    text-shadow: 0 1px 1px rgba(0,0,0,.3);
+    -webkit-border-radius: .5em; 
+    -moz-border-radius: .5em;
+    border-radius: .5em;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+.button:hover { text-decoration: none; }
+.button:active { position: relative; top: 1px; }
+.bigrounded { -webkit-border-radius: 2em; -moz-border-radius: 2em; border-radius: 2em; }
+.medium { font-size: 12px; padding: .4em 1.5em .42em; }
+.small { font-size: 11px; padding: .2em 1em .275em; }
+
+/* green */
+.green {
+    color: #e8f0de;
+    border: solid 1px #538312;
+    background: #64991e;
+    background: -webkit-gradient(linear, left top, left bottom, from(#7db72f), to(#4e7d0e));
+    background: -moz-linear-gradient(top,  #7db72f,  #4e7d0e);
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#7db72f', endColorstr='#4e7d0e');
+}
+.green:hover {
+    background: #538018;
+    background: -webkit-gradient(linear, left top, left bottom, from(#6b9d28), to(#436b0c));
+    background: -moz-linear-gradient(top,  #6b9d28,  #436b0c);
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#6b9d28', endColorstr='#436b0c');
+}
+.green:active {
+    color: #a9c08c;
+    background: -webkit-gradient(linear, left top, left bottom, from(#4e7d0e), to(#7db72f));
+    background: -moz-linear-gradient(top,  #4e7d0e,  #7db72f);
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#4e7d0e', endColorstr='#7db72f');
+}
+
+.title{position:relative;vertical-align:bottom;}
+.title .drops{margin-left:10px;font-size:12px;color:#f60;}
+@-webkit-keyframes drop{
+    from {top:-60px;right:0;}
+    50% {top:17px;right:0;}
+    to {top:17px;right:420px;;}
+}
+@-moz-keyframes drop{
+    from {top:-60px;right:0;}
+    50% {top:17px;right:0;}
+    to {top:17px;right:420px;;}
+}
+@keyframes drop{
+    from {top:-60px;right:0;}
+    50% {top:17px;right:0;}
+    to {top:17px;right:420px;;}
+}
+.drops{
+    position:absolute;
+    top:17px;
+    right:420px;
+    animation: drop 1s ease-out;
+    -webkit-animation: drop 1s ease-out;
+    -moz-animation: drop 1s ease-out;
+}
+.sub-title{text-align:right;font-weight:normal;font-style:italic;font-size:14px;}
+.msg-box p span, .msg-box p span{color:#FF7928;}
+.msg-box pre{
+    font-size: 0.95em;
+    line-height: 1.5438em;
+    margin: -.5em 0 1.1em;
+    padding: 1em 1.6em 1em 1.2em;
+    vertical-align: top;
+    border-left: 1px solid #999;
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
+    color:#000;
+}
+.msg-box hr{margin:40px 0}
+.install-tip div{float:left;width:120px;height:40px;line-height:40px;}
+.install-tip p{height:40px;line-height:40px}
+address{text-align:right;}
+
+.test-area h3{font-weight:normal;}
+.test-area .links a{margin-right:10px;}
+.test-area .links span{margin-right:10px;}
+</style>
+<!--<script src="http://myhere.github.com/Vimlike-Shortcuts/build/vimlike-shortcuts.js"></script>-->
+</head>
+
+<body>
+    <h1 class="title">Vimlike-Shortcuts
+        <span class="drops">j, k, G, gg, ...</span>
+    </h1>
+    <h2 class="sub-title">用 vim 的按键来浏览网页</h2>
+
+    <div class="msg-box">
+        <h2>试一试?</h2>
+        <p>请将输入法切换到英文状态, 然后按 <span>?<sup>[按住Shift]</sup></span> 查看帮助.<p>
+        <hr />
+
+        <h2>给自己的浏览器加上这个功能?</h2>
+        <h3>Step 1: 保存</h3>
+        <div class="install-tip">
+            <div><a class="button green" href="javascript:(function(v){ !!v ? v.toggleVimlike() : (function(d, s) { s = document.createElement('script'); s.charset = 'utf-8'; s.src = 'http://myhere.github.com/Vimlike-Shortcuts/build/vimlike-shortcuts.js'; d.getElementsByTagName('head')[0].appendChild(s); })(document); })(window.shortcuts);">Vimlike</a></div>
+            <p id="install-tip"></p>
+        </div>
+        <h3>Step 2: 使用</h3>
+        <p id="use-tip"></p>
+        <hr />
+
+        <h2>给自己的网站加上快捷键?</h2>
+        <pre>&lt;script charset = "utf-8"
+        src="http://myhere.github.com/Vimlike-Shortcuts/build/vimlike-shortcuts.js"&gt;&lt;script&gt;</pre>
+        <p>将上面的代码放到网站的 footer 或者 header中. 更多信息见 <a target="_blank" href="https://github.com/myhere/Vimlike-Shortcuts/wiki/vimlike-shortcuts.js.manual">Wiki</a></p>
+        <hr />
+
+        <h2>Project Hosting</h2>
+        <ul>
+            <li><a target="_blank" href="https://github.com/myhere/Vimlike-Shortcuts">Project Home</a></li>
+        </ul>
+    </div>
+
+    <address title="Feedback or Advice Please!">--vimlike.shortcuts@gmail.com</address>
+    <hr />
+
+    <h2>以下用于测试</h2>
+    <div class="test-area">
+        <h3>f or F 获取链接</h3>
+        <p class="links">
+        <a target="_blank" href="https://github.com/myhere/Vimlike-Shortcuts">github</a>
+        <span>|</span>
+        <a target="_blank" href="https://github.com/myhere/Vimlike-Shortcuts/wiki">wiki</a>
+        <span>|</span>
+        <a target="_blank" href="https://github.com/myhere/Vimlike-Shortcuts/wiki/vimlike-shortcuts.js.manual">api</a>
+        <span>|</span>
+        <a target="_blank" href="https://github.com/myhere/Vimlike-Shortcuts/wiki/shortcuts.js.manual">api</a>
+        <span>|</span>
+        <a target="_blank" href="https://github.com/myhere/Vimlike-Shortcuts/blob/master/test/test.js">use shortcuts.js</a>
+        <span>|</span>
+        <a target="_blank" href="http://zhangl.in">blog</a>
+
+        </p>
+        <h3>gi 输入</h3>
+        <p>
+        <input placeholder="gi" />
+        <input placeholder="g2i" />
+        <input placeholder="g3i" />
+        <input placeholder="g4i" />
+        </p>
+        <h3>G 到最底部</h3>
+        <h3>gg 到最顶部</h3>
+    </div>
+<script>
+(function() {
+function detectBrowser() {
+    var ua = navigator.userAgent,
+        browser = 'other';
+
+    if (/MSIE/.test(ua)) {
+        browser = 'msie';
+    } else if (/Firefox/.test(ua)) {
+        browser = 'firefox';
+    } else if (/Safari/.test(ua)) {
+        if (/Chrome/.test(ua)) {
+            browser = 'chrome';
+        } else {
+            browser = 'safari';
+        }
+    } else if (/Opera/.test(ua)) {
+        browser = 'opera';
+    } else {
+        browser = 'other';
+    }
+
+    return browser;
+}
+
+function showInstallTip() {
+    var browser = detectBrowser(),
+    install_tip_map = {
+        'msie': '<span>右键</span>点击左面的按钮, 选择右键菜单中的 "<span>添加到收藏夹...</span>".',
+        'firefox': '<span>右键</span>点击左面的按钮, 选择右键菜单中的 "<span>将此链接加为书签</span>".',
+        'chrome': '按 <span>Ctrl + Shift + B</span>. 显示书签栏后，直接将左面的按钮拖拽到浏览器书签栏.',
+        'safari': '按 <span>Ctrl + Shift + B</span> 显示书签栏后，直接将左面的按钮拖拽到浏览器书签栏.',
+        'opera': '<span>右键</span>点击左面的按钮, 选择右键菜单中的 "<span>将此链接加为书签</span>".',
+        'other': '<span>右键</span>点击左面的按钮, 选择右键菜单中的 "<span>添加到收藏夹...</span>".'
+    },
+    use_tip_map = {
+        'msie': '',
+        'firefox': '',
+        'chrome': '',
+        'safari': '',
+        'opera': '',
+        'other': ''
+    },
+    use_tip = '浏览其它页面时, 点击浏览器收藏夹中的 "<span>Vimlike</span>". 按 <span title="按住 shift 哦!">?</span> 查看帮助!';
+
+    document.getElementById('install-tip').innerHTML = install_tip_map[browser];
+    document.getElementById('use-tip').innerHTML = use_tip;
+}
+
+showInstallTip();
+})();
+</script>
+</body>
+</html>
