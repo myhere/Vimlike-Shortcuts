@@ -10,7 +10,7 @@ With this script you can browser the web without using your mouse(sounds cool...
 How to use?  
 ----------- 
 
-You should load this script `http://up-coming.com/vimlike-shorcuts.js` before using these shortcuts!
+You should load this script `http://myhere.github.com/Vimlike-Shortcuts/build/vimlike-shortcuts.js` before using these shortcuts!
 
 * scroll down webpage using `j`
 * scroll top using `k`
@@ -21,7 +21,7 @@ You should load this script `http://up-coming.com/vimlike-shorcuts.js` before us
 
 Simply add the code below to your websites' footer or header, you can also add a toggle button if you like.
 
-    <script src="http://up-coming.com/vimlike-shorcuts.js" charset="utf-8"></script>
+    <script src="http://myhere.github.com/Vimlike-Shortcuts/build/vimlike-shortcuts.js" charset="utf-8"></script>
 
 or
 
@@ -29,7 +29,7 @@ or
         !!v ? v.toggleVimlike() : (function(d, s) {
                 s = document.createElement('script');
                 s.charset = 'utf-8';
-                s.src = 'http://up-coming.com/vimlike-shorcuts.js';
+                s.src = 'http://myhere.github.com/Vimlike-Shortcuts/build/vimlike-shortcuts.js';
                 d.getElementsByTagName('head')[0].appendChild(s);
             })(document);
         })(window.shortcuts);
@@ -37,7 +37,7 @@ or
 
 ### if you don't like move your hands from mouse to keyboard frequently
 
-Just click this [link](http://up-coming.com/user-manual.html) and drag the
+Just click this [link](http://myhere.github.com/Vimlike-Shortcuts/demos/index.html) and drag the
 button to your browser's  `bookmarks bar`, and just click the button on your
 `bookmarks bar` when browsering webpages and you got it!
 
