@@ -7,6 +7,11 @@ What's this?
 Vimlike-Shortcuts gives you vimlike shortcuts when surfing on the Internet.
 With this script you can browser the web without using your mouse(sounds cool...).
 
+Demo
+----
+Please click the link below!
+[demo](http://myhere.github.com/Vimlike-Shortcuts/demos/index.html)
+
 How to use?  
 ----------- 
 
