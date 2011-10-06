@@ -398,7 +398,7 @@ var CONSTANTS = {
 '<vim010wrapper>'+
     '<vim010main>'+
         '<vim010hd>'+
-            '<vim010hd-lt>Vim-like Shortcut Help<vim010-btn id="vimlike:shortcuts:disableBtn"></vim010-btn></vim010hd-lt>'+
+            '<vim010hd-lt>Vimlike-Shortcuts Help<vim010-btn id="vimlike:shortcuts:disableBtn"></vim010-btn></vim010hd-lt>'+
             '<vim010hd-rt><vim010-btn id="vimlike:shortcuts:closeBtn" title="click or press Enter to hide">close</vim010-btn></vim010hd-rt>'+
         '</vim010hd>'+
         '<vim010bd>'+
