@@ -16,7 +16,11 @@
 var logger = S.logger;
 // logger.off();
 
-var DOM = {
+var DOM = (function() {
+var doc = document,
+    isStrictMode = doc.compatMode === 'CSS1Compat';
+
+return {
     /**
      * 元素是否被隐藏了 (display:none|visibility:hidden|祖先被隐藏)
      */
@@ -70,7 +74,7 @@ var DOM = {
     getElementsInView: function(tagName) {
         var eles;
         if (typeof tagName == 'string') {
-            eles = document.getElementsByTagName(tagName);
+            eles = doc.getElementsByTagName(tagName);
         } else {
             eles = tagName;
         }
@@ -107,39 +111,34 @@ var DOM = {
     },
 
     getDocScrollTop: function() {
-        var doc = document;
         return doc.documentElement.scrollTop || doc.body.scrollTop;
     },
 
     getDocScrollLeft: function() {
-        var doc = document;
         return doc.documentElement.scrollLeft || doc.body.scrollLeft;
     },
 
     getViewHeight: function() {
-        var doc = document,
-            height = window.innerHeight;
+        var height = window.innerHeight;
             
         if (typeof height == 'undefined') {
-            height = Math.max(doc.documentElement.clientHeight, doc.body.clientHeight);
+            height = isStrictMode ? doc.documentElement.clientHeight : doc.body.clientHeight;
         }
 
         return height;
     },
 
     getViewWidth: function() {
-        var doc = document;
-        return Math.max(doc.documentElement.clientWidth, doc.body.clientWidth);
+        // window.innerWidth 包含滚动条
+        return isStrictMode ? doc.documentElement.clientWidth : doc.body.clientWidth;
     },
 
     getDocHeight: function() {
-        var doc = document;
-        return doc.documentElement.scrollHeight || doc.body.scrollHeight;
+        return Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
     },
 
     addStyleSheet: function(clsText, attrs) {
-        var doc   = document,
-            style = doc.createElement('style');
+        var style = doc.createElement('style');
 
         style.type = 'text/css';
         if (style.styleSheet) {
@@ -158,6 +157,7 @@ var DOM = {
         doc.body.appendChild(style);
     }
 };
+})();
 
 // like underscore
 var utils = (function() {
@@ -429,7 +429,7 @@ var CONSTANTS = {
             '</vim010bd-row-rt>'+
         '</vim010bd>'+
         '<vim010ft>'+
-            '<vim010ft-lt><a href="mailto:myhere.2009@gmail.com">Feedback</a> | <a target="_blank" title="project hosting" href="https://github.com/myhere">GitHub</a> | <a href="http://twitter.com/#!/myhere_2009" target="_blank" title="follow me">Twitter</a></vim010ft-lt>'+
+            '<vim010ft-lt><a href="mailto:myhere.2009@gmail.com">Feedback</a> | <a target="_blank" title="project hosting" href="https://github.com/myhere">GitHub</a></vim010ft-lt>'+
             '<vim010ft-rt>Version:1.0.0</vim010ft-rt>'+
         '</vim010ft>'+
     '</vim010main>'+
