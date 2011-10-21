@@ -1216,11 +1216,29 @@ V.addKeypress('goInsert', {
         }
     }
     function fireClick(ele) {
-        // hack for so safe Firefox
+        // hack for so safe Firefox;
         if (/Firefox/.test(navigator.userAgent)) {
             logger.log('[fireClick], firefox, special click');
-            var attr_target = ele.getAttribute('target');
-            if (!attr_target || attr_target == '_self') { // self tab
+            var attr_target = ele.getAttribute('target'),
+                selfOpen = true;
+
+            if (!attr_target) {
+                var base_eles = document.getElementsByTagName('head')[0].getElementsByTagName('base'),
+                    i = 0,
+                    len = base_eles.length;
+                while (i < len) {
+                    if (base_eles[i].getAttribute('target') == '_self') {
+                        selfOpen = true;
+                    } else {
+                        selfOpen = false;
+                    }
+                    ++i;
+                }
+            } else if (attr_target == '_self') {
+                selfOpen = true;
+            }
+
+            if (selfOpen) { // self tab
                 window.location.href = ele.href;
             } else { // new tab
                 window.open(ele.href);
